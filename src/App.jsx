@@ -1,0 +1,46 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from './context/AuthContext';
+
+// Components aur Pages imports
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import Users from './pages/Users';
+import Stores from './pages/Stores';
+import Items from './pages/Items';
+
+function App() {
+  // AuthContext se token nikalna taake check kar sakein banda login hai ya nahi
+  const { token } = useContext(AuthContext);
+
+  return (
+    <Router>
+      <Routes>
+        {/* 1. Login Route: Agar token hai toh seedha Users pe bhej do, warna Login dikhao */}
+        <Route
+          path="/login"
+          element={!token ? <Login /> : <Navigate to="/users" />}
+        />
+
+        {/* 2. Protected Routes: Ye routes sirf tabhi chalenge jab token hoga */}
+        <Route
+          path="/"
+          element={token ? <Layout /> : <Navigate to="/login" />}
+        >
+          {/* Default page jab user "/" pe aaye */}
+          <Route index element={<Navigate to="/users" />} />
+
+          {/* Main Pages jo Layout (Header+Sidebar) ke andar render honge */}
+          <Route path="users" element={<Users />} />
+          <Route path="stores" element={<Stores />} />
+          <Route path="items" element={<Items />} />
+        </Route>
+
+        {/* 3. Catch All: Agar koi galat URL likhe toh status ke mutabiq redirect karein */}
+        <Route path="*" element={<Navigate to={token ? "/users" : "/login"} />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
