@@ -27,7 +27,7 @@ const Users = () => {
     const [mode, setMode] = useState('add'); // 'add', 'edit', 'view'
     const [selectedId, setSelectedId] = useState(null);
     const [formData, setFormData] = useState({
-        name: '', phone: '', password: '', cnic: '', address: '',
+        name: '', fullname: '', phone: '', password: '', cnic: '', address: '',
         city_id: '', region_id: '', designation_id: '', role: 'user', reportTo: ''
     });
 
@@ -36,6 +36,7 @@ const Users = () => {
         setLoading(true);
         try {
             const res = await API.get(`/users?page=${page}&limit=10&search=${search}`);
+            console.log("users :::::", res.data.users);
             setUsers(res.data.users);
             setTotalPages(res.data.totalPages);
             // ReportTo ke liye hum users ki list hi use kar lete hain (Jo supervisor hon)
@@ -68,6 +69,7 @@ const Users = () => {
             setSelectedId(user.id);
             setFormData({
                 name: user.name || '',
+                fullname: user.fullname || '',
                 phone: user.phone || '',
                 password: '', // Edit/View mein password reset rakhein
                 cnic: user.cnic || '',
@@ -79,7 +81,7 @@ const Users = () => {
                 reportTo: user.reportTo || ''
             });
         } else {
-            setFormData({ name: '', phone: '', password: '', cnic: '', address: '', city_id: '', region_id: '', designation_id: '', role: 'user', reportTo: '' });
+            setFormData({ name: '', fullname: '', phone: '', password: '', cnic: '', address: '', city_id: '', region_id: '', designation_id: '', role: 'user', reportTo: '' });
         }
         setOpen(true);
     };
@@ -138,11 +140,11 @@ const Users = () => {
 
             {/* Users Table */}
             <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflowX: 'auto' }}>
-                <Table sx={{ minWidth: 1100 }}> {/* Minimum width taake columns cramp na hon */}
+                <Table sx={{ minWidth: 1100 }}>
                     <TableHead sx={{ bgcolor: '#1b2142' }}>
                         <TableRow>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>User</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Full Name</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Phone</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>CNIC</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Designation</TableCell>
@@ -160,8 +162,8 @@ const Users = () => {
                         ) : users.length > 0 ? (
                             users.map((u) => (
                                 <TableRow key={u.id} hover>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#ab1d47' }}>#{u.id}</TableCell>
-                                    <TableCell sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{u.name}</TableCell>
+                                    <TableCell sx={{ fontWeight: 500, }}>{u.name}</TableCell>
+                                    <TableCell sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{u.fullname || 'N/A'}</TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.phone}</TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.cnic || '-'}</TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.designation?.name || '-'}</TableCell>
@@ -225,11 +227,15 @@ const Users = () => {
                     <Grid container spacing={3} sx={{ mt: 0.1 }}>
 
                         {/* Row 1 */}
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Full Name</Typography>
-                            <TextField fullWidth placeholder="Enter full name" disabled={mode === 'view'} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                        <Grid item xs={12} sm={4}>
+                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>User Name</Typography>
+                            <TextField fullWidth placeholder="Enter name" disabled={mode === 'view'} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} sm={4}>
+                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Full Name</Typography>
+                            <TextField fullWidth placeholder="Enter full name" disabled={mode === 'view'} value={formData.fullname} onChange={(e) => setFormData({ ...formData, fullname: e.target.value })} />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
                             <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Phone Number</Typography>
                             <TextField fullWidth placeholder="e.g. 03001234567" disabled={mode === 'view'} value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                         </Grid>
