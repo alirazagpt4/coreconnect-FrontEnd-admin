@@ -112,7 +112,7 @@ const Users = () => {
         <Box>
             {/* Header Section */}
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: '#1b2142' }}>
-                Users Management
+                User Management
             </Typography>
 
             {/* Search and Add Bar */}
@@ -140,63 +140,66 @@ const Users = () => {
 
             {/* Users Table */}
             <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflowX: 'auto' }}>
-                <Table sx={{ minWidth: 1100 }}>
+                <Table size="small"> {/* 👈 Table size small kar di */}
                     <TableHead sx={{ bgcolor: '#1b2142' }}>
                         <TableRow>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>User</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Full Name</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Phone</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>CNIC</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Designation</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>City</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Region</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Reports To</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>User</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Full Name</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Phone</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>CNIC</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Designation</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>City</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Region</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>ReportTo</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1.5 }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={9} align="center"><CircularProgress size={30} /></TableCell>
+                                <TableCell colSpan={9} align="center" sx={{ py: 3 }}><CircularProgress size={25} /></TableCell>
                             </TableRow>
                         ) : users.length > 0 ? (
                             users.map((u) => (
-                                <TableRow key={u.id} hover>
-                                    <TableCell sx={{ fontWeight: 500, }}>{u.name}</TableCell>
-                                    <TableCell sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{u.fullname || 'N/A'}</TableCell>
-                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.phone}</TableCell>
-                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.cnic || '-'}</TableCell>
-                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.designation?.name || '-'}</TableCell>
-                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.city?.name || '-'}</TableCell>
-                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{u.region?.name || '-'}</TableCell>
-                                    <TableCell>
-                                        {/* Agar reportTo ki ID hai toh dikhao, warna '-' */}
-                                        {u.reportTo ? ` ${u.manager.name}` : 'None'}
+                                <TableRow key={u.id} hover sx={{ '& td': { py: 0.8, px: 1.5 } }}> {/* 👈 Padding mazeed kam ki */}
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{u.name}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{u.fullname || '-'}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{u.phone}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{u.cnic || '-'}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <Typography variant="caption" sx={{ bgcolor: '#f0f2f5', px: 1, py: 0.3, borderRadius: 1, fontWeight: 600 }}>
+                                            {u.designation?.name || '-'}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{u.city?.name || '-'}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{u.region?.name || '-'}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem' }}>
+                                        {u.manager ? (
+                                            <Tooltip title={`Manager ID: ${u.reportTo}`}>
+                                                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: '#ab1d47', fontWeight: 500 }}>
+                                                    {u.manager.name}
+                                                </Typography>
+                                            </Tooltip>
+                                        ) : '-'}
                                     </TableCell>
                                     <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
-                                        <Stack direction="row" spacing={1} justifyContent="center">
-                                            <Tooltip title="View">
-                                                <IconButton onClick={() => handleOpen('view', u)} size="small" sx={{ color: '#17a2b8' }}>
-                                                    <Visibility fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="Edit">
-                                                <IconButton onClick={() => handleOpen('edit', u)} size="small" color="primary">
-                                                    <Edit fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="Delete">
-                                                <IconButton onClick={() => handleDelete(u.id)} size="small" color="error">
-                                                    <Delete fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
+                                        <Stack direction="row" spacing={0.5} justifyContent="center">
+                                            <IconButton onClick={() => handleOpen('view', u)} size="small" sx={{ color: '#17a2b8' }}>
+                                                <Visibility sx={{ fontSize: 18 }} />
+                                            </IconButton>
+                                            <IconButton onClick={() => handleOpen('edit', u)} size="small" color="primary">
+                                                <Edit sx={{ fontSize: 18 }} />
+                                            </IconButton>
+                                            <IconButton onClick={() => handleDelete(u.id)} size="small" color="error">
+                                                <Delete sx={{ fontSize: 18 }} />
+                                            </IconButton>
                                         </Stack>
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={9} align="center">No users found.</TableCell>
+                                <TableCell colSpan={9} align="center" sx={{ py: 3 }}>No users found.</TableCell>
                             </TableRow>
                         )}
                     </TableBody>
@@ -224,81 +227,115 @@ const Users = () => {
                 </DialogTitle>
 
                 <DialogContent dividers>
-                    <Grid container spacing={3} sx={{ mt: 0.1 }}>
+                    {/* ROW 1: Full Name, Phone, CNIC */}
+                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Full Name</Typography>
+                            <TextField
+                                fullWidth size="small" placeholder="Enter full name"
+                                disabled={mode === 'view'}
+                                value={formData.fullname}
+                                onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Phone Number</Typography>
+                            <TextField
+                                fullWidth size="small" placeholder="03001234567"
+                                disabled={mode === 'view'}
+                                value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>CNIC Number</Typography>
+                            <TextField
+                                fullWidth size="small" placeholder="3310x-xxxxxxx-x"
+                                disabled={mode === 'view'}
+                                value={formData.cnic}
+                                onChange={(e) => setFormData({ ...formData, cnic: e.target.value })}
+                            />
+                        </Box>
+                    </Box>
 
-                        {/* Row 1 */}
-                        <Grid item xs={12} sm={4}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>User Name</Typography>
-                            <TextField fullWidth placeholder="Enter name" disabled={mode === 'view'} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Full Name</Typography>
-                            <TextField fullWidth placeholder="Enter full name" disabled={mode === 'view'} value={formData.fullname} onChange={(e) => setFormData({ ...formData, fullname: e.target.value })} />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Phone Number</Typography>
-                            <TextField fullWidth placeholder="e.g. 03001234567" disabled={mode === 'view'} value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
-                        </Grid>
-
-                        {/* Row 2 */}
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>CNIC Number</Typography>
-                            <TextField fullWidth placeholder="3310x-xxxxxxx-x" disabled={mode === 'view'} value={formData.cnic} onChange={(e) => setFormData({ ...formData, cnic: e.target.value })} />
-                        </Grid>
-                        {mode === 'add' && (
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Account Password</Typography>
-                                <TextField fullWidth type="password" placeholder="Set password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
-                            </Grid>
-                        )}
-
-                        <Grid item xs={12}><Divider /></Grid>
-
-                        {/* Row 3 - Selects (Ab labels kabhi nahi chupenge) */}
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Select City</Typography>
-                            <TextField select fullWidth disabled={mode === 'view'} value={formData.city_id} onChange={(e) => setFormData({ ...formData, city_id: e.target.value })}>
-                                {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-                            </TextField>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Select Region</Typography>
-                            <TextField select fullWidth disabled={mode === 'view'} value={formData.region_id} onChange={(e) => setFormData({ ...formData, region_id: e.target.value })}>
-                                {regions.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
-                            </TextField>
-                        </Grid>
-
-                        {/* Row 4 */}
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Select Designation</Typography>
-                            <TextField select fullWidth disabled={mode === 'view'} value={formData.designation_id} onChange={(e) => setFormData({ ...formData, designation_id: e.target.value })}>
+                    {/* ROW 2: Designation, City, Region */}
+                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Select Designation</Typography>
+                            <TextField
+                                select fullWidth size="small"
+                                disabled={mode === 'view'}
+                                value={formData.designation_id}
+                                onChange={(e) => setFormData({ ...formData, designation_id: e.target.value })}
+                            >
                                 {designations.map(d => <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>)}
                             </TextField>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Assign System Role</Typography>
-                            <TextField select fullWidth disabled={mode === 'view'} value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-                                <MenuItem value="user">Standard User</MenuItem>
-                                <MenuItem value="supervisor">Supervisor</MenuItem>
-                                <MenuItem value="admin">Administrator</MenuItem>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Select City</Typography>
+                            <TextField
+                                select fullWidth size="small"
+                                disabled={mode === 'view'}
+                                value={formData.city_id}
+                                onChange={(e) => setFormData({ ...formData, city_id: e.target.value })}
+                            >
+                                {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                             </TextField>
-                        </Grid>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Select Region</Typography>
+                            <TextField
+                                select fullWidth size="small"
+                                disabled={mode === 'view'}
+                                value={formData.region_id}
+                                onChange={(e) => setFormData({ ...formData, region_id: e.target.value })}
+                            >
+                                {regions.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
+                            </TextField>
+                        </Box>
+                    </Box>
 
-                        <Grid item xs={12}><Divider /></Grid>
-
-                        {/* Row 5 */}
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Reporting To (Manager)</Typography>
-                            <TextField select fullWidth disabled={mode === 'view'} value={formData.reportTo} onChange={(e) => setFormData({ ...formData, reportTo: e.target.value })}>
+                    {/* ROW 3: Reporting To, User Name, Password */}
+                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Reporting To (Manager)</Typography>
+                            <TextField
+                                select fullWidth size="small"
+                                disabled={mode === 'view'}
+                                value={formData.reportTo}
+                                onChange={(e) => setFormData({ ...formData, reportTo: e.target.value })}
+                            >
                                 <MenuItem value=""><em>No Manager / Self</em></MenuItem>
                                 {supervisors.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
                             </TextField>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold', color: '#333' }}>Complete Residential Address</Typography>
-                            <TextField fullWidth multiline rows={2} disabled={mode === 'view'} value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
-                        </Grid>
-                    </Grid>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>User Name</Typography>
+                            <TextField
+                                fullWidth size="small" placeholder="Enter username"
+                                disabled={mode === 'view'}
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            {mode === 'add' ? (
+                                <>
+                                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Account Password</Typography>
+                                    <TextField
+                                        fullWidth size="small" type="password" placeholder="Set password"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    />
+                                </>
+                            ) : (
+                                /* Empty space to keep alignment if not in Add mode */
+                                <Box sx={{ flex: 1 }} />
+                            )}
+                        </Box>
+                    </Box>
+
+
                 </DialogContent>
 
                 <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa' }}>

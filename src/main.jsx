@@ -7,11 +7,11 @@ import theme from './themes/theme.js' // Jo humne pehle banaya tha
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+
     <ThemeProvider theme={theme}>
       <AuthProvider> {/* 👈 Poori App ko wrap kar diya */}
         <App />
       </AuthProvider>
     </ThemeProvider>
-  </React.StrictMode>,
+ 
 )
