@@ -112,7 +112,7 @@ const Sidebar = () => {
                   <AssessmentIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Sales Report"
+                  primary="Daily Sales Report"
                   primaryTypographyProps={{
                     fontSize: '0.9rem',
                     fontWeight: location.pathname === '/sales-report' ? 'bold' : 'normal',
@@ -120,6 +120,32 @@ const Sidebar = () => {
                   }}
                 />
               </ListItemButton>
+
+
+
+              {/* 2. Sales Report */}
+              <ListItemButton
+                sx={{
+                  pl: 4,
+                  '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#f0f0f0' },
+                  '&.Mui-selected:hover': { bgcolor: '#e0e0e0' }
+                }}
+                onClick={() => navigate('/summary-report')}
+                selected={location.pathname === '/summary-report'} // 👈 Corrected
+              >
+                <ListItemIcon sx={{ color: location.pathname === '/summary-report' ? '#ab1d47' : '#1b2142' }}> {/* 👈 Fixed logic here */}
+                  <AssessmentIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Summary Sales Report"
+                  primaryTypographyProps={{
+                    fontSize: '0.9rem',
+                    fontWeight: location.pathname === '/summary-report' ? 'bold' : 'normal',
+                    color: location.pathname === '/summary-report' ? '#ab1d47' : 'inherit'
+                  }}
+                />
+              </ListItemButton>
+
 
             </List>
           </Collapse>

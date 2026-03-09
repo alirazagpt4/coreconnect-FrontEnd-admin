@@ -10,6 +10,7 @@ import Stores from './pages/Stores';
 import Items from './pages/Items';
 import AttendanceReport from './pages/AttendanceReport';
 import SalesReport from './pages/SalesReport';
+import SummaryReport from './pages/SummarySaleReport';
 
 function App() {
   // AuthContext se token nikalna taake check kar sakein banda login hai ya nahi
@@ -38,6 +39,7 @@ function App() {
           <Route path="items" element={<Items />} />
           <Route path="attendance-report" element={<AttendanceReport />} />
           <Route path="sales-report" element={<SalesReport />} />
+          <Route path="summary-report" element={<SummaryReport />} />
 
         </Route>
 

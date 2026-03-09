@@ -298,7 +298,7 @@ const Users = () => {
                     {/* ROW 3: Reporting To, User Name, Password */}
                     <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                         <Box sx={{ flex: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Reporting To (Manager)</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Reporting To (Supervisor)</Typography>
                             <TextField
                                 select fullWidth size="small"
                                 disabled={mode === 'view'}
