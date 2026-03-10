@@ -85,9 +85,9 @@ const SalesReport = () => {
                     <Paper sx={{ display: 'flex', gap: 3, p: 1, px: 3, bgcolor: '#1b2142', color: 'white', borderRadius: 2 }}>
                         <Box><Typography variant="caption">Transactions</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{reportData.summary.totalTransactions}</Typography></Box>
                         <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444' }} />
-                        <Box><Typography variant="caption">Grand Qty</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{reportData.summary.grandTotalQty?.toLocaleString()}</Typography></Box>
+                        <Box><Typography variant="caption">Sold Qty</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{reportData.summary.grandTotalQty?.toLocaleString()}</Typography></Box>
                         <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444' }} />
-                        <Box><Typography variant="caption">Grand Total</Typography><Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>Rs. {Math.round(reportData.summary.grandTotalAmount).toLocaleString()}</Typography></Box>
+                        <Box><Typography variant="caption">Total Value</Typography><Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>Rs. {Math.round(reportData.summary.grandTotalAmount).toLocaleString()}</Typography></Box>
                     </Paper>
                 )}
             </Box>
@@ -208,14 +208,14 @@ const SalesReport = () => {
                                         </TableRow>
                                     ))}
                                     {/* SUB-TOTAL ROW FOR THIS TRANSACTION */}
-                                    <TableRow sx={{ bgcolor: '#f9f9f9' }}>
+                                    <TableRow sx={{ bgcolor: '#cccbcbff' }}>
                                         <TableCell colSpan={8} align="right" sx={{ fontWeight: 'bold', fontSize: '11px', color: '#555' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                                                 <ReceiptLong fontSize="small" /> Transaction Total :
                                             </Box>
                                         </TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 'bold', color: '#ab1d47', bgcolor: '#fff5f7' }}>{transaction.subTotalQty}</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 'bold', color: '#ab1d47', bgcolor: '#fff5f7' }}>{transaction.subTotalAmount.toLocaleString()}</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 'bold', color: '#ab1d47', bgcolor: '#cccbcbff' }}>{transaction.subTotalQty}</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 'bold', color: '#ab1d47', bgcolor: '#cccbcbff' }}>{transaction.subTotalAmount.toLocaleString()}</TableCell>
                                     </TableRow>
                                 </React.Fragment>
                             ))

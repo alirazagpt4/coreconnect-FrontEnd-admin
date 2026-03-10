@@ -128,7 +128,7 @@ const ItemsMaster = () => {
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Sub-Cat</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Item Name</TableCell>
               {/* ALAG ALAG COLUMNS */}
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>RP</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>MRP</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dis %</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Net Price</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
