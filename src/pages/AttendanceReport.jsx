@@ -85,74 +85,79 @@ const AttendanceReport = () => {
                 </Typography>
             </Box>
 
-            <Paper sx={{ p: 2, mb: 2, borderRadius: 2, boxShadow: '0px 2px 8px rgba(0,0,0,0.1)' }}>
+            <Paper sx={{ p: 1.5, mb: 1.5, borderRadius: 2, boxShadow: '0px 1px 5px rgba(0,0,0,0.08)' }}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
 
-                    {/* ROW 1: Dates & City */}
-                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    {/* ROW 1: From Date, To Date, City */}
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5 }}>
                         <Box sx={filterBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#555', mb: 0.5, display: 'block' }}>From Date</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>From Date</Typography>
                             <DatePicker
                                 value={new Date(filters.fromDate)}
                                 onChange={(v) => setFilters({ ...filters, fromDate: format(v, 'yyyy-MM-dd') })}
-                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiInputBase-input': { py: 0.8 } } } }}
                             />
                         </Box>
                         <Box sx={filterBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#555', mb: 0.5, display: 'block' }}>To Date</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>To Date</Typography>
                             <DatePicker
                                 value={new Date(filters.toDate)}
                                 onChange={(v) => setFilters({ ...filters, toDate: format(v, 'yyyy-MM-dd') })}
-                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiInputBase-input': { py: 0.8 } } } }}
                             />
                         </Box>
                         <Box sx={filterBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#555', mb: 0.5, display: 'block' }}>City</Typography>
-                            <TextField select fullWidth size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value })}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>City</Typography>
+                            <TextField select fullWidth size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value })} SelectProps={{ sx: { py: 0 } }}>
                                 <MenuItem value="">All Cities</MenuItem>
                                 {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                             </TextField>
                         </Box>
                     </Box>
 
-                    {/* ROW 2: Store, BA Name, Status */}
-                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    {/* ROW 2: Store, BA Name, Status + Generate Button */}
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}>
                         <Box sx={filterBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#555', mb: 0.5, display: 'block' }}>Store</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Store</Typography>
                             <TextField select fullWidth size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })}>
                                 <MenuItem value="">All Stores</MenuItem>
                                 {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
                             </TextField>
                         </Box>
                         <Box sx={filterBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#555', mb: 0.5, display: 'block' }}>BA Name</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>BA Name</Typography>
                             <TextField select fullWidth size="small" value={filters.ba_id} onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })}>
                                 <MenuItem value="">All BAs</MenuItem>
                                 {users?.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
                             </TextField>
                         </Box>
                         <Box sx={filterBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#555', mb: 0.5, display: 'block' }}>Status</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Status</Typography>
                             <TextField select fullWidth size="small" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
                                 <MenuItem value="">Both</MenuItem>
                                 <MenuItem value="present">Present</MenuItem>
                                 <MenuItem value="absent">Absent</MenuItem>
                             </TextField>
                         </Box>
-                    </Box>
 
-                    {/* ROW 3: Generate Button */}
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Box sx={{ width: '200px' }}>
+                        {/* Compact Button */}
+                        <Box sx={{ flex: 0.6, minWidth: '120px' }}>
                             <Button
                                 fullWidth
                                 variant="contained"
-                                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Assessment />}
+                                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Assessment sx={{ fontSize: '1.1rem' }} />}
                                 onClick={handleGenerateReport}
                                 disabled={loading}
-                                sx={{ bgcolor: '#ab1d47', fontWeight: 'bold', height: '40px', '&:hover': { bgcolor: '#8e183a' }, textTransform: 'none' }}
+                                sx={{
+                                    bgcolor: '#ab1d47',
+                                    fontWeight: 'bold',
+                                    height: '35px',
+                                    fontSize: '0.85rem',
+                                    '&:hover': { bgcolor: '#8e183a' },
+                                    textTransform: 'none'
+                                }}
                             >
-                                {loading ? 'Wait...' : 'Generate Report'}
+                                {loading ? 'Wait...' : 'Generate'}
                             </Button>
                         </Box>
                     </Box>

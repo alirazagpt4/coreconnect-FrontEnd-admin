@@ -100,7 +100,7 @@ const Users = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Bawa ji, kya aap waqai is user ko delete karna chahte hain?")) {
+        if (window.confirm("do you want to delete this user?")) {
             try {
                 await API.delete(`/users/${id}`);
                 fetchUsers();

@@ -5,6 +5,7 @@ import { AuthContext } from './context/AuthContext';
 // Components aur Pages imports
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Stores from './pages/Stores';
 import Items from './pages/Items';
@@ -34,7 +35,9 @@ function App() {
           <Route index element={<Navigate to="/users" />} />
 
           {/* Main Pages jo Layout (Header+Sidebar) ke andar render honge */}
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="users" element={<Users />} />
+
           <Route path="stores" element={<Stores />} />
           <Route path="items" element={<Items />} />
           <Route path="attendance-report" element={<AttendanceReport />} />

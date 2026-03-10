@@ -33,7 +33,7 @@ const ItemsMaster = () => {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await API.get(`/items?page=${page}&limit=10&search=${search}`);
+      const res = await API.get(`/items?page=${page}&limit=25&search=${search}`);
       setItems(res.data.items || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) { console.error("Fetch Items Error:", err); }
@@ -123,11 +123,11 @@ const ItemsMaster = () => {
         <Table size="small">
           <TableHead sx={{ bgcolor: '#1b2142' }}>
             <TableRow>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Item Code</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Item Name</TableCell>
-              {/* ALAG ALAG COLUMNS */}
+              {/* <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Item Code</TableCell> */}
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Sub-Cat</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Item Name</TableCell>
+              {/* ALAG ALAG COLUMNS */}
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>RP</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dis %</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Net Price</TableCell>
@@ -139,12 +139,13 @@ const ItemsMaster = () => {
               <TableRow><TableCell colSpan={8} align="center"><CircularProgress size={30} /></TableCell></TableRow>
             ) : items.map((item) => (
               <TableRow key={item.id} hover>
-                <TableCell sx={{ fontWeight: 'bold', color: '#ab1d47' }}>{item.item_code}</TableCell>
-                <TableCell sx={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {item.product_name}
-                </TableCell>
+                {/* <TableCell sx={{ fontWeight: 'bold', color: '#ab1d47' }}>{item.item_code}</TableCell> */}
                 <TableCell>{item.category?.category_name || '-'}</TableCell>
                 <TableCell>{item.subcategory?.subcategory_name || '-'}</TableCell>
+                <TableCell sx={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {item.product_name}
+                </TableCell>
+
                 <TableCell>{parseFloat(item.retail_price).toLocaleString()}</TableCell>
                 <TableCell>{item.discount}%</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', color: 'green' }}>

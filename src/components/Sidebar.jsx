@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
+  Dashboard as DashboardIcon,
   People as PeopleIcon,
   Store as StoreIcon,
   Inventory as InventoryIcon,
@@ -39,6 +40,13 @@ const Sidebar = () => {
       <Box sx={{ overflow: 'auto', mt: 2 }}>
         <List>
           {/* --- Regular Menus --- */}
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => navigate('/dashboard')} selected={location.pathname === '/dashboard'}>
+              <ListItemIcon sx={{ color: '#1b2142' }}><DashboardIcon /></ListItemIcon>
+              <ListItemText primary="Dashboard" />
+            </ListItemButton>
+          </ListItem>
+
           <ListItem disablePadding>
             <ListItemButton onClick={() => navigate('/users')} selected={location.pathname === '/users'}>
               <ListItemIcon sx={{ color: '#1b2142' }}><PeopleIcon /></ListItemIcon>
