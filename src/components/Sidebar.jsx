@@ -155,6 +155,30 @@ const Sidebar = () => {
               </ListItemButton>
 
 
+            
+              <ListItemButton
+                sx={{
+                  pl: 4,
+                  '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#f0f0f0' },
+                  '&.Mui-selected:hover': { bgcolor: '#e0e0e0' }
+                }}
+                onClick={() => navigate('/short-items-report')}
+                selected={location.pathname === '/short-items-report'} // 👈 Corrected
+              >
+                <ListItemIcon sx={{ color: location.pathname === '/short-items-report' ? '#ab1d47' : '#1b2142' }}> {/* 👈 Fixed logic here */}
+                  <AssessmentIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Short Items Report"
+                  primaryTypographyProps={{
+                    fontSize: '0.9rem',
+                    fontWeight: location.pathname === '/short-items-report' ? 'bold' : 'normal',
+                    color: location.pathname === '/short-items-report' ? '#ab1d47' : 'inherit'
+                  }}
+                />
+              </ListItemButton>
+
+
             </List>
           </Collapse>
         </List>
