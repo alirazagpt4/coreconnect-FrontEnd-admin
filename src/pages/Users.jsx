@@ -78,7 +78,8 @@ const Users = () => {
                 region_id: user.region_id || '',
                 designation_id: user.designation_id || '',
                 role: user.role || 'user',
-                reportTo: user.reportTo || ''
+                reportTo: user.reportTo || '',
+                is_active: user.is_active
             });
         } else {
             setFormData({ name: '', fullname: '', phone: '', password: '', cnic: '', address: '', city_id: '', region_id: '', designation_id: '', role: 'user', reportTo: '' });
@@ -105,6 +106,31 @@ const Users = () => {
                 await API.delete(`/users/${id}`);
                 fetchUsers();
             } catch (err) { alert("Delete fail!"); }
+        }
+    };
+
+
+
+    const handleToggleActive = async (id) => {
+        // Agar ye console nahi aa raha, iska matlab hai onClick trigger hi nahi hua
+        console.log("Function Triggered for ID:", id);
+
+        try {
+            const res = await API.patch('/status/toggle-status', {
+                modelName: 'User',
+                id: id
+            });
+
+            console.log("Backend Response:", res.data);
+
+            if (res.data.success) {
+                // Check karein backend 'is_active' bhej raha hai ya 'status'
+                const newStatus = res.data.is_active;
+                setUsers(prev => prev.map(u => u.id === id ? { ...u, is_active: newStatus } : u));
+            }
+        } catch (err) {
+            console.error("API Error:", err);
+            alert("Status update failed!");
         }
     };
 
@@ -151,6 +177,7 @@ const Users = () => {
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>City</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Region</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>ReportTo</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Is_Active</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1.5 }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -181,6 +208,29 @@ const Users = () => {
                                                 </Typography>
                                             </Tooltip>
                                         ) : '-'}
+                                    </TableCell>
+                                    <TableCell sx={{ fontSize: '0.85rem', textAlign: 'center' }}>
+                                        <Tooltip title={u.is_active ? "Click to Deactivate" : "Click to Activate"}>
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Kisi aur click event ko rokne ke liye
+                                                    console.log("Button Clicked for ID:", u.id);
+                                                    handleToggleActive(u.id);
+                                                }}
+                                                sx={{
+                                                    color: u.is_active ? '#28a745' : '#dc3545',
+                                                    border: '1px solid',
+                                                    borderColor: u.is_active ? '#28a745' : '#dc3545',
+                                                    borderRadius: '4px',
+                                                    width: '30px',
+                                                    height: '30px',
+                                                    '&:hover': { bgcolor: u.is_active ? '#e8f5e9' : '#ffebee' }
+                                                }}
+                                            >
+                                                {u.is_active ? '✓' : '✗'}
+                                            </IconButton>
+                                        </Tooltip>
                                     </TableCell>
                                     <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
                                         <Stack direction="row" spacing={0.5} justifyContent="center">
@@ -333,6 +383,21 @@ const Users = () => {
                                 <Box sx={{ flex: 1 }} />
                             )}
                         </Box>
+
+                        {(mode === 'edit' || mode === 'view') && (
+                            <Box sx={{ flex: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Account Status</Typography>
+                                <TextField
+                                    select fullWidth size="small"
+                                    value={formData.is_active}
+                                     disabled={mode === 'view'}
+                                    onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
+                                >
+                                    <MenuItem value={true}>🟢 Active</MenuItem>
+                                    <MenuItem value={false}>🔴 Inactive</MenuItem>
+                                </TextField>
+                            </Box>
+                        )}
                     </Box>
 
 

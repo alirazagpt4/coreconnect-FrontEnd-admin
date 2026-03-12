@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TextField, Pagination, IconButton, Button,
   CircularProgress, Stack, Dialog, DialogTitle, DialogContent,
-  DialogActions, MenuItem, Grid, InputAdornment
+  DialogActions, MenuItem, Grid, InputAdornment, Tooltip
 } from '@mui/material';
 import { Edit, Delete, Add, Search, Visibility } from '@mui/icons-material';
 import API from '../api/API';
@@ -98,6 +98,24 @@ const ItemsMaster = () => {
     } catch (err) { alert("Operation failed!"); }
   };
 
+
+  const handleToggleActive = async (id) => {
+    try {
+      const res = await API.patch('/status/toggle-status', {
+        modelName: 'ItemMaster', // Backend model name
+        id: id
+      });
+
+      if (res.data.success) {
+        const newStatus = res.data.is_active;
+        setItems(prev => prev.map(item => item.id === id ? { ...item, is_active: newStatus } : item));
+      }
+    } catch (err) {
+      console.error("Item status update error:", err);
+      alert("Item status update failed!");
+    }
+  };
+
   return (
     <Box>
       <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: '#1b2142' }}>
@@ -131,6 +149,7 @@ const ItemsMaster = () => {
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>MRP</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dis %</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Net Price</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Is_Active</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -150,6 +169,27 @@ const ItemsMaster = () => {
                 <TableCell>{item.discount}%</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', color: 'green' }}>
                   {parseFloat(item.price_after_discount).toLocaleString()}
+                </TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>
+                  <Tooltip title={item.is_active ? "Mark as Inactive" : "Mark as Active"}>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleActive(item.id);
+                      }}
+                      sx={{
+                        color: item.is_active ? '#28a745' : '#dc3545',
+                        border: '1px solid',
+                        borderColor: item.is_active ? '#28a745' : '#dc3545',
+                        borderRadius: '4px',
+                        width: '30px',
+                        height: '30px'
+                      }}
+                    >
+                      {item.is_active ? '✓' : '✗'}
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
                 <TableCell align="center">
                   <Stack direction="row" spacing={0.5} justifyContent="center">
@@ -246,6 +286,20 @@ const ItemsMaster = () => {
                 InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
               />
             </Box>
+            {(mode === 'edit' || mode === 'view') && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Item Availability</Typography>
+                <TextField
+                  select fullWidth size="small"
+                  disabled={mode === 'view'}
+                  value={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
+                >
+                  <MenuItem value={true}>🟢 In Stock / Active</MenuItem>
+                  <MenuItem value={false}>🔴 Out of Stock / Inactive</MenuItem>
+                </TextField>
+              </Box>
+            )}
           </Box>
 
           {/* ROW 4: Net Price Highlight Section */}
@@ -265,6 +319,7 @@ const ItemsMaster = () => {
               Rs. {parseFloat(formData.retail_price - (formData.retail_price * (formData.discount / 100)) || 0).toLocaleString()}
             </Typography>
           </Box>
+
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpen(false)} color="inherit">Cancel</Button>

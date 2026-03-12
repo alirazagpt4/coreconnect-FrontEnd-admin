@@ -71,7 +71,12 @@ const Stores = () => {
 
         setCities(getUniqueByName(c.data));
         setRegions(getUniqueByName(r.data));
-        setUsers(u.data.users ? u.data.users.filter(user => user.role === 'user') : []);
+        // Yahan filter update karein: role 'user' ho AUR active ho
+        const activeBAs = u.data.users ? u.data.users.filter(user =>
+          user.role === 'user' && user.is_active === true
+        ) : [];
+
+        setUsers(activeBAs);
 
       } catch (err) {
         console.error("Dropdown Load Error:", err);
@@ -97,7 +102,8 @@ const Stores = () => {
         city_id: store.city_id || '',
         region_id: store.region_id || '',
         ba_user_id: store.ba_user_id || '',
-        targets: store.targets || ''
+        targets: store.targets || '',
+        is_active: store.is_active
 
 
       });
@@ -118,6 +124,24 @@ const Stores = () => {
       setOpen(false);
       fetchStores();
     } catch (err) { alert("Action Failed! Check console."); }
+  };
+
+
+  const handleToggleActive = async (id) => {
+    try {
+      const res = await API.patch('/status/toggle-status', {
+        modelName: 'Store', // Backend model ka naam yahan 'Store' hoga
+        id: id
+      });
+
+      if (res.data.success) {
+        const newStatus = res.data.is_active;
+        setStores(prev => prev.map(s => s.id === id ? { ...s, is_active: newStatus } : s));
+      }
+    } catch (err) {
+      console.error("Status update error:", err);
+      alert("Status update failed!");
+    }
   };
 
   return (
@@ -151,6 +175,7 @@ const Stores = () => {
               {/* <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Manager</TableCell> */}
               <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Target</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>BA Assigned</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Is_Active</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -174,6 +199,27 @@ const Stores = () => {
                   }}>
                     {s.beauty_advisor?.name || 'Unassigned'}
                   </Typography>
+                </TableCell>
+                <TableCell sx={{ fontSize: '0.85rem' }}>
+                  <Tooltip title={s.is_active ? "Deactivate Store" : "Activate Store"}>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleActive(s.id);
+                      }}
+                      sx={{
+                        color: s.is_active ? '#28a745' : '#dc3545',
+                        border: '1px solid',
+                        borderColor: s.is_active ? '#28a745' : '#dc3545',
+                        borderRadius: '4px',
+                        width: '28px',
+                        height: '28px'
+                      }}
+                    >
+                      {s.is_active ? '✓' : '✗'}
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
                 <TableCell align="center">
                   <Stack direction="row" spacing={0.5} justifyContent="center">
@@ -270,6 +316,22 @@ const Stores = () => {
                 {users.map(u => <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>)}
               </TextField>
             </Box>
+
+            {/* ROW 3: Account Status for Edit/View */}
+            {(mode === 'edit' || mode === 'view') && (
+              <Box sx={{ flex: 1 }}> {/* Alignment matching other rows */}
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Store Status</Typography>
+                <TextField
+                  select fullWidth size="small"
+                  disabled={mode === 'view'}
+                  value={formData.is_active || false}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
+                >
+                  <MenuItem value={true}>🟢 Active</MenuItem>
+                  <MenuItem value={false}>🔴 Inactive</MenuItem>
+                </TextField>
+              </Box>
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
