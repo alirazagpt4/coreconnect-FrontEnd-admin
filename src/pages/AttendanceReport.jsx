@@ -42,6 +42,7 @@ const AttendanceReport = () => {
             const res = await API.get(`/reports/attendance-report`, { params: filters });
             setReport(res.data.data);
             setSummary(res.data.summary);
+            console.log(res.data);
         } catch (err) {
             alert("Report nikaalne mein masla hua hai!");
         } finally {
@@ -282,9 +283,18 @@ const AttendanceReport = () => {
                                             ) : "-"}
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" sx={{ color: '#d32f2f' }} onClick={() => window.open(row.location, '_blank')}>
-                                                <LocationOn sx={{ fontSize: 18 }} />
-                                            </IconButton>
+                                            {/* Sirf tab dikhao jab attendance 'Present' ho AUR location link maujood ho */}
+                                            {row.attendance === 'Present' && row.location && row.location !== "No Location" ? (
+                                                <IconButton
+                                                    size="small"
+                                                    sx={{ color: '#d32f2f' }}
+                                                    onClick={() => window.open(row.location, '_blank')}
+                                                >
+                                                    <LocationOn sx={{ fontSize: 18 }} />
+                                                </IconButton>
+                                            ) : (
+                                                <Typography variant="caption" sx={{ color: '#ccc' }}>-</Typography>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 );
