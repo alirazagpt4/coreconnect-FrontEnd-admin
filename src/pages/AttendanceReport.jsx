@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Button, CircularProgress,
-    MenuItem, Chip, IconButton
+    MenuItem, Chip, IconButton, Divider
 } from '@mui/material';
 import { LocationOn, Visibility, Assessment } from '@mui/icons-material';
 import API from '../api/API';
@@ -17,6 +17,14 @@ const AttendanceReport = () => {
     const [cities, setCities] = useState([]);
     const [stores, setStores] = useState([]);
     const [users, setUsers] = useState([]);
+
+    const [summary, setSummary] = useState({
+        total: 0,
+        present: 0,
+        absent: 0,
+        presentPercentage: '0%',
+        absentPercentage: '0%'
+    });
 
     // Filter States
     const [filters, setFilters] = useState({
@@ -33,6 +41,7 @@ const AttendanceReport = () => {
         try {
             const res = await API.get(`/reports/attendance-report`, { params: filters });
             setReport(res.data.data);
+            setSummary(res.data.summary);
         } catch (err) {
             alert("Report nikaalne mein masla hua hai!");
         } finally {
@@ -50,7 +59,12 @@ const AttendanceReport = () => {
                 ]);
                 setCities(c.data);
                 setStores(s.data.stores);
-                setUsers(u.data.users);
+                // JSON ke mutabiq designation.name "BA" hona chahiye
+                const baUsersOnly = u.data.users.filter(user =>
+                    user.designation && user.designation.name === "BA"
+                );
+
+                setUsers(baUsersOnly);
             } catch (err) { console.error("Dropdown Data Error:", err); }
         };
         fetchFiltersData();
@@ -78,12 +92,69 @@ const AttendanceReport = () => {
 
     return (
         <Box sx={{ p: 2, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Assessment sx={{ mr: 1, color: '#ab1d47' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>
-                    Attendance Report
-                </Typography>
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between', // Ye left aur right balance karega
+                mb: 2,
+                flexWrap: 'wrap', // Mobile par overlap na ho isliye
+                gap: 2
+            }}>
+                {/* Left Side: Title Section */}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Assessment sx={{ mr: 1, color: '#ab1d47' }} />
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>
+                        Attendance Report
+                    </Typography>
+                </Box>
+
+                {/* Right Side: Summary Header */}
+
+                <Paper sx={{
+                    display: 'flex',
+                    gap: 4,
+                    p: 1.2,
+                    px: 3,
+                    bgcolor: '#1b2142',
+                    color: 'white',
+                    borderRadius: 2,
+                    alignItems: 'center',
+                    boxShadow: '0px 4px 10px rgba(0,0,0,0.15)',
+                    // Margin bottom hata diya kyunki ab ye title ke saath align hai
+                    mb: 0
+                }}>
+                    {/* Total Box */}
+                    <Box>
+                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Total BAs</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{summary.total}</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', fontSize: '0.6rem', mt: -0.3 }}>(100%)</Typography>
+                    </Box>
+
+                    <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '25px', alignSelf: 'center' }} />
+
+                    {/* Present Box */}
+                    <Box>
+                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Present</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>{summary.present}</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', fontSize: '0.6rem', mt: -0.3 }}>({summary.presentPercentage})</Typography>
+                    </Box>
+
+                    <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '25px', alignSelf: 'center' }} />
+
+                    {/* Absent Box */}
+                    <Box>
+                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Absent</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ff5252' }}>{summary.absent}</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', fontSize: '0.6rem', mt: -0.3 }}>({summary.absentPercentage})</Typography>
+                    </Box>
+                </Paper>
+
             </Box>
+
+            {/* ATTENDANCE SUMMARY HEADER */}
+
+
+
 
             <Paper sx={{ p: 1.5, mb: 1.5, borderRadius: 2, boxShadow: '0px 1px 5px rgba(0,0,0,0.08)' }}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>

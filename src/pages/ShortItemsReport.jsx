@@ -29,22 +29,27 @@ const ShortItemsReport = () => {
         ba_user_id: '',
         category_id: '',
         subcategory_id: '',
-        item_id: '' // Item filter added
+        item_id: ''
     });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
+                // limit=1000 add kiya hai taake data poora aaye
                 const [c, s, u, cat, items] = await Promise.all([
-                    API.get('/cities'), // Make sure this matches your backend route
-                    API.get('/store'),
-                    API.get('/users'),
+                    API.get('/cities'),
+                    API.get('/store?limit=1000'),
+                    API.get('/users?limit=1000'),
                     API.get('/category'),
-                    API.get('/items') // Fetching items for dropdown
+                    API.get('/items?limit=1000')
                 ]);
                 setCities(c.data);
                 setStores(s.data.stores || []);
-                setUsers(u.data.users || []);
+                const baUsersOnly = u.data.users.filter(user =>
+                    user.designation && user.designation.name === "BA"
+                );
+
+                setUsers(baUsersOnly);
                 setCategories(cat.data || []);
                 setItemsList(items.data.items || []);
             } catch (err) { console.error("Fetch Error:", err); }
@@ -52,19 +57,28 @@ const ShortItemsReport = () => {
         fetchInitialData();
     }, []);
 
-    // Dependent Sub-Category Fetching
+    // FIXED: Category change hone par sub-category reset aur load karne ka logic
     useEffect(() => {
         if (filters.category_id) {
             API.get(`/subCategory/${filters.category_id}`).then(res => setSubCategories(res.data));
         } else {
             setSubCategories([]);
         }
+        // Category badalte hi sub-category dropdown reset
+        setFilters(prev => ({ ...prev, subcategory_id: '' }));
     }, [filters.category_id]);
 
     const handleGenerateReport = async () => {
         setLoading(true);
+
+        // FIXED: Empty filters ko remove karne ka logic (All select karne par issue nahi aayega)
+        const cleanFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, value]) => value !== "" && value !== null)
+        );
+
         try {
-            const res = await API.get(`/reports/shortitems-report`, { params: filters });
+            const res = await API.get(`/reports/shortitems-report`, { params: cleanFilters });
+            console.log("short items report", res.data.data);
             setReportData(res.data.data);
         } catch (err) {
             alert("Report fetch nahi ho saki!");
@@ -73,7 +87,6 @@ const ShortItemsReport = () => {
         }
     };
 
-    // Date display format: "11 Mar 2026"
     const formatDateDisplay = (dateStr) => {
         try {
             return format(parseISO(dateStr), 'dd MMM yyyy');
@@ -84,7 +97,6 @@ const ShortItemsReport = () => {
 
     return (
         <Box sx={{ p: 1.5, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
-            {/* Header section like Sales Report */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Inventory sx={{ mr: 1, color: '#ab1d47' }} />
@@ -113,15 +125,16 @@ const ShortItemsReport = () => {
                             />
                         </Box>
 
-                        <TextField select label="City" size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value })} sx={{ flex: 0.8, minWidth: '100px' }}>
+                        <TextField select label="City" size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value, store_id: '' })} sx={{ flex: 0.8, minWidth: '100px' }}>
                             <MenuItem value="">All</MenuItem>
                             {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                         </TextField>
 
                         <TextField select label="Store" size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })} sx={{ flex: 1, minWidth: '120px' }}>
                             <MenuItem value="">All</MenuItem>
-                            {stores.filter(s => !filters.city_id || s.city_id === filters.city_id).map(s => (
-                                <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>
+                            {stores.filter(s => !filters.city_id || String(s.city_id) === String(filters.city_id)).map(s => (
+                                // Store Name ke saath Area add kiya
+                                <MenuItem key={s.id} value={s.id}>{s.store_name} {s.area ? `(${s.area})` : ''}</MenuItem>
                             ))}
                         </TextField>
 
@@ -133,7 +146,7 @@ const ShortItemsReport = () => {
 
                     {/* ROW 2: Category, Sub-Cat, Item + Generate Button */}
                     <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                        <TextField select label="Category" size="small" value={filters.category_id} onChange={(e) => setFilters({ ...filters, category_id: e.target.value, subcategory_id: '' })} sx={{ flex: 1 }}>
+                        <TextField select label="Category" size="small" value={filters.category_id} onChange={(e) => setFilters({ ...filters, category_id: e.target.value })} sx={{ flex: 1 }}>
                             <MenuItem value="">All</MenuItem>
                             {categories.map(c => <MenuItem key={c.id} value={c.id}>{c.category_name}</MenuItem>)}
                         </TextField>
@@ -145,7 +158,14 @@ const ShortItemsReport = () => {
 
                         <TextField select label="Select Item" size="small" value={filters.item_id} onChange={(e) => setFilters({ ...filters, item_id: e.target.value })} sx={{ flex: 2 }}>
                             <MenuItem value="">All Items</MenuItem>
-                            {itemsList.map(i => <MenuItem key={i.id} value={i.id}>{i.product_name}</MenuItem>)}
+                            {itemsList
+                                .filter(i => {
+                                    const catMatch = !filters.category_id || String(i.category_id) === String(filters.category_id);
+                                    const subMatch = !filters.subcategory_id || String(i.subcategory_id) === String(filters.subcategory_id);
+                                    return catMatch && subMatch;
+                                })
+                                .map(i => <MenuItem key={i.id} value={i.id}>{i.product_name}</MenuItem>)
+                            }
                         </TextField>
 
                         <Button
@@ -170,20 +190,22 @@ const ShortItemsReport = () => {
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            {["Date", "City", "Store", "BA Name", "Category", "Sub Category", "Item Name"].map(h => (
+                            {/* "Area" column add kar di gayi hai */}
+                            {["Date", "City", "Store", "Area", "BA Name", "Category", "Sub Category", "Item Name"].map(h => (
                                 <TableCell key={h} align="center" sx={{ bgcolor: '#1b2142', color: 'white', fontWeight: 'bold', fontSize: '12px', py: 1 }}>{h}</TableCell>
                             ))}
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <TableRow><TableCell colSpan={7} align="center" sx={{ py: 8 }}><CircularProgress color="secondary" /></TableCell></TableRow>
+                            <TableRow><TableCell colSpan={8} align="center" sx={{ py: 8 }}><CircularProgress color="secondary" /></TableCell></TableRow>
                         ) : reportData.length > 0 ? (
                             reportData.map((row, idx) => (
                                 <TableRow key={idx} hover sx={{ '& td': { fontSize: '11px', borderBottom: '1px solid #f0f0f0' } }}>
                                     <TableCell align="center">{formatDateDisplay(row.date)}</TableCell>
                                     <TableCell align="center">{row.cityName}</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 500 }}>{row.storeName}</TableCell>
+                                    <TableCell align="center" sx={{ color: '#666' }}>{row.areaName || row.area || 'N/A'}</TableCell>
                                     <TableCell align="center">{row.baName}</TableCell>
                                     <TableCell align="center">{row.categoryName}</TableCell>
                                     <TableCell align="center">{row.subCategoryName}</TableCell>
@@ -191,7 +213,7 @@ const ShortItemsReport = () => {
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4, color: '#999' }}>No short items found for selected filters.</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4, color: '#999' }}>No short items found for selected filters.</TableCell></TableRow>
                         )}
                     </TableBody>
                 </Table>

@@ -35,37 +35,48 @@ const SummaryReport = () => {
             try {
                 const [c, s, u, cat] = await Promise.all([
                     API.get('/cities'),
-                    API.get('/store'),
-                    API.get('/users'),
+                    API.get('/store?limit=1000'),
+                    API.get('/users?limit=1000'),
                     API.get('/category')
                 ]);
                 setCities(c.data);
                 setStores(s.data.stores);
-                setUsers(u.data.users);
+                const baUsersOnly = u.data.users.filter(user =>
+                    user.designation && user.designation.name === "BA"
+                );
+
+                setUsers(baUsersOnly);
                 setCategories(cat.data);
             } catch (err) { console.error("Fetch Error:", err); }
         };
         fetchInitialData();
     }, []);
 
+    // FIXED: Category change hone par sub-category reset aur load karne ka logic
     useEffect(() => {
         if (filters.cat_id) {
             API.get(`/subCategory/${filters.cat_id}`).then(res => setSubCategories(res.data));
         } else {
             setSubCategories([]);
         }
+        // Jab Category "All" ho ya badle, toh sub-category reset karein
+        setFilters(prev => ({ ...prev, subcat_id: '' }));
     }, [filters.cat_id]);
 
     const handleGenerateReport = async () => {
         setLoading(true);
+
+        // FIXED: Empty filters ko remove karein taake "All" select karne par query sahi jaye
+        const cleanFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, value]) => value !== "" && value !== null)
+        );
+
         try {
-            const res = await API.get(`/reports/sales-report`, { params: filters });
-            const rawData = res.data.data; // Yeh aapka array of sales hai
+            const res = await API.get(`/reports/sales-report`, { params: cleanFilters });
+            const rawData = res.data.data || [];
 
             const summaryRows = [];
-
             rawData.forEach(sale => {
-                // Har sale ke andar items check karein
                 sale.items.forEach(item => {
                     summaryRows.push({
                         date: sale.date,
@@ -74,8 +85,8 @@ const SummaryReport = () => {
                         baName: sale.baName,
                         cat: item.cat,
                         subCat: item.subCat,
-                        totalQty: item.qty, // Individual item qty
-                        totalValue: item.value // Individual item value
+                        totalQty: item.qty,
+                        totalValue: item.value
                     });
                 });
             });
@@ -84,11 +95,9 @@ const SummaryReport = () => {
         } catch (err) {
             console.error(err);
             alert("Data fetch nahi ho saka!");
-        }
-        finally { setLoading(false); }
+        } finally { setLoading(false); }
     };
 
-    // Date Box width helper
     const dateBoxStyle = { width: '180px' };
 
     return (
@@ -100,8 +109,6 @@ const SummaryReport = () => {
 
             <Paper sx={{ p: 2, mb: 1.5, borderRadius: 2 }}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-
-                    {/* ROW 1: Dates, City, Store */}
                     <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5, alignItems: 'flex-end' }}>
                         <Box sx={dateBoxStyle}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 0.5, display: 'block' }}>From</Typography>
@@ -131,7 +138,6 @@ const SummaryReport = () => {
                         </TextField>
                     </Box>
 
-                    {/* ROW 2: BA, Category, Sub Category, Button */}
                     <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
                         <TextField select label="BA Name" size="small" value={filters.ba_id} onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })} sx={{ flex: 1 }}>
                             <MenuItem value="">All</MenuItem>
@@ -163,7 +169,6 @@ const SummaryReport = () => {
                             {loading ? "FETCHING..." : "GENERATE"}
                         </Button>
                     </Box>
-
                 </LocalizationProvider>
             </Paper>
 

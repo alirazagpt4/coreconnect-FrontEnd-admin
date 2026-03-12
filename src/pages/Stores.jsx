@@ -15,6 +15,13 @@ const Stores = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
 
+
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [pendingStatusUpdate, setPendingStatusUpdate] = useState(null); // ID store karne ke liye
+
+
+
+
   // Dropdown States
   const [cities, setCities] = useState([]);
   const [regions, setRegions] = useState([]);
@@ -127,6 +134,21 @@ const Stores = () => {
   };
 
 
+  // Jab user tick/cross par click kare
+  const confirmStatusToggle = (id) => {
+    setPendingStatusUpdate(id);
+    setStatusDialogOpen(true);
+  };
+
+  // Jab user popup mein 'YES' click kare
+  const processStatusToggle = async () => {
+    if (pendingStatusUpdate) {
+      await handleToggleActive(pendingStatusUpdate);
+      setStatusDialogOpen(false);
+      setPendingStatusUpdate(null);
+    }
+  };
+
   const handleToggleActive = async (id) => {
     try {
       const res = await API.patch('/status/toggle-status', {
@@ -206,15 +228,16 @@ const Stores = () => {
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleToggleActive(s.id);
+                        confirmStatusToggle(s.id); // 👈 Ab ye direct call nahi karega, popup kholega
                       }}
                       sx={{
                         color: s.is_active ? '#28a745' : '#dc3545',
                         border: '1px solid',
                         borderColor: s.is_active ? '#28a745' : '#dc3545',
                         borderRadius: '4px',
-                        width: '28px',
-                        height: '28px'
+                        width: '30px',
+                        height: '30px',
+                        '&:hover': { bgcolor: s.is_active ? '#e8f5e9' : '#ffebee' }
                       }}
                     >
                       {s.is_active ? '✓' : '✗'}
@@ -341,6 +364,21 @@ const Stores = () => {
               {mode === 'edit' ? 'Update Store' : 'Save Store'}
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+      {/* STATUS CONFIRMATION DIALOG */}
+      <Dialog open={statusDialogOpen} onClose={() => setStatusDialogOpen(false)}>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Confirm Action</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to change this user's account status?</Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setStatusDialogOpen(false)} variant="outlined" color="inherit">
+            No, Cancel
+          </Button>
+          <Button onClick={processStatusToggle} variant="contained" sx={{ bgcolor: '#ab1d47', '&:hover': { bgcolor: '#8e183a' } }}>
+            Yes, Proceed
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

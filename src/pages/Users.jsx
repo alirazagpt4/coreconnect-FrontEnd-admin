@@ -22,6 +22,11 @@ const Users = () => {
     const [designations, setDesignations] = useState([]);
     const [supervisors, setSupervisors] = useState([]);
 
+
+    // active status handling states
+    const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+    const [pendingStatusUpdate, setPendingStatusUpdate] = useState(null);
+
     // Dialog Control
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState('add'); // 'add', 'edit', 'view'
@@ -110,6 +115,21 @@ const Users = () => {
     };
 
 
+
+    // Jab user tick/cross par click kare
+    const confirmStatusToggle = (id) => {
+        setPendingStatusUpdate(id);
+        setStatusDialogOpen(true);
+    };
+
+    // Jab user popup mein 'YES' click kare
+    const processStatusToggle = async () => {
+        if (pendingStatusUpdate) {
+            await handleToggleActive(pendingStatusUpdate);
+            setStatusDialogOpen(false);
+            setPendingStatusUpdate(null);
+        }
+    };
 
     const handleToggleActive = async (id) => {
         // Agar ye console nahi aa raha, iska matlab hai onClick trigger hi nahi hua
@@ -214,9 +234,8 @@ const Users = () => {
                                             <IconButton
                                                 size="small"
                                                 onClick={(e) => {
-                                                    e.stopPropagation(); // Kisi aur click event ko rokne ke liye
-                                                    console.log("Button Clicked for ID:", u.id);
-                                                    handleToggleActive(u.id);
+                                                    e.stopPropagation();
+                                                    confirmStatusToggle(u.id); // 👈 Ab ye direct call nahi karega, popup kholega
                                                 }}
                                                 sx={{
                                                     color: u.is_active ? '#28a745' : '#dc3545',
@@ -390,7 +409,7 @@ const Users = () => {
                                 <TextField
                                     select fullWidth size="small"
                                     value={formData.is_active}
-                                     disabled={mode === 'view'}
+                                    disabled={mode === 'view'}
                                     onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
                                 >
                                     <MenuItem value={true}>🟢 Active</MenuItem>
@@ -410,6 +429,22 @@ const Users = () => {
                             {mode === 'edit' ? 'CONFIRM & UPDATE' : 'CONFIRM & SAVE'}
                         </Button>
                     )}
+                </DialogActions>
+            </Dialog>
+
+            {/* STATUS CONFIRMATION DIALOG */}
+            <Dialog open={statusDialogOpen} onClose={() => setStatusDialogOpen(false)}>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Confirm Action</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to change this user's account status?</Typography>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setStatusDialogOpen(false)} variant="outlined" color="inherit">
+                        No, Cancel
+                    </Button>
+                    <Button onClick={processStatusToggle} variant="contained" sx={{ bgcolor: '#ab1d47', '&:hover': { bgcolor: '#8e183a' } }}>
+                        Yes, Proceed
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Box>
