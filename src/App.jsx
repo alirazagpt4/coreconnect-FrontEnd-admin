@@ -13,6 +13,7 @@ import AttendanceReport from './pages/AttendanceReport';
 import SalesReport from './pages/SalesReport';
 import SummaryReport from './pages/SummarySaleReport';
 import ShortItemsReport from './pages/ShortItemsReport';
+import InterceptionReport from './pages/InterceptionReport'
 
 function App() {
   // AuthContext se token nikalna taake check kar sakein banda login hai ya nahi
@@ -45,6 +46,9 @@ function App() {
           <Route path="sales-report" element={<SalesReport />} />
           <Route path="summary-report" element={<SummaryReport />} />
           <Route path="short-items-report" element={<ShortItemsReport />} />
+          <Route path="interception-report" element={<InterceptionReport />} />
+
+
 
         </Route>
 

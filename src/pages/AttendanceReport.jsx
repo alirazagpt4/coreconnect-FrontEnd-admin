@@ -128,7 +128,7 @@ const AttendanceReport = () => {
                     <Box>
                         <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Total BAs</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{summary.total}</Typography>
-                        <Typography variant="caption" sx={{ display: 'block', fontSize: '0.6rem', mt: -0.3 }}>(100%)</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', color: '#1b2142', fontSize: '0.6rem', mt: -0.3 }}>_</Typography>
                     </Box>
 
                     <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '25px', alignSelf: 'center' }} />
@@ -137,7 +137,7 @@ const AttendanceReport = () => {
                     <Box>
                         <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Present</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>{summary.present}</Typography>
-                        <Typography variant="caption" sx={{ display: 'block', fontSize: '0.6rem', mt: -0.3 }}>({summary.presentPercentage})</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', color: '#4caf50', fontSize: '0.65rem', mt: -0.3 }}>({summary.presentPercentage})</Typography>
                     </Box>
 
                     <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '25px', alignSelf: 'center' }} />
@@ -146,7 +146,7 @@ const AttendanceReport = () => {
                     <Box>
                         <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Absent</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ff5252' }}>{summary.absent}</Typography>
-                        <Typography variant="caption" sx={{ display: 'block', fontSize: '0.6rem', mt: -0.3 }}>({summary.absentPercentage})</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', color: '#ff5252', fontSize: '0.65rem', mt: -0.3 }}>({summary.absentPercentage})</Typography>
                     </Box>
                 </Paper>
 
