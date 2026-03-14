@@ -30,10 +30,10 @@ const Login = () => {
             // Response format check: { token: "...", user: {...} }
             if (response.data.token) {
                 login(response.data.token, response.data.user);
-                if (response.data.user.role === 'admin') {
 
-                    navigate('/users'); // Login ke baad users list pe bhej do
-                }
+
+                navigate('/dashboard'); // Login ke baad users list pe bhej do
+
             }
         } catch (err) {
             console.error(err);

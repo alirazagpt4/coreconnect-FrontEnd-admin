@@ -4,13 +4,20 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, parseISO } from 'date-fns';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, TextField, Button, CircularProgress, MenuItem
+    TableHead, TableRow, TextField, Button, CircularProgress, MenuItem, Divider
 } from '@mui/material';
-import { Assessment, FilterAlt } from '@mui/icons-material';
+import { Assessment, FilterAlt, AdsClick, ShoppingBag, Percent } from '@mui/icons-material';
 import API from '../api/API';
+
+const filterBoxStyle = { flex: 1, minWidth: '150px' };
 
 const InterceptionReport = () => {
     const [reportData, setReportData] = useState([]);
+    const [summary, setSummary] = useState({
+        totalInterceptions: 0,
+        totalConversions: 0,
+        overallRatio: "0.00"
+    });
     const [loading, setLoading] = useState(false);
 
     // Dropdown States
@@ -29,7 +36,6 @@ const InterceptionReport = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // Parallel fetch for speed
                 const [c, s, u] = await Promise.all([
                     API.get('/cities'),
                     API.get('/store?limit=1000'),
@@ -53,9 +59,9 @@ const InterceptionReport = () => {
         );
 
         try {
-            // End point as per your backend requirement
             const res = await API.get(`/reports/interception-report`, { params: cleanFilters });
             setReportData(res.data.data || []);
+            setSummary(res.data.summary || { totalInterceptions: 0, totalConversions: 0, overallRatio: "0.00" });
         } catch (err) {
             console.error(err);
             alert("Interception data fetch nahi ho saka!");
@@ -66,78 +72,137 @@ const InterceptionReport = () => {
 
     return (
         <Box sx={{ p: 1.5, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
-            {/* Header */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                <Assessment sx={{ mr: 1, color: '#ab1d47' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>
-                    Interception & Conversion Report
-                </Typography>
+
+            {/* TOP HEADER: Title + Summary Card */}
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 2,
+                flexWrap: 'wrap',
+                gap: 2
+            }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Assessment sx={{ mr: 1, color: '#ab1d47' }} />
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>
+                        Interception Report
+                    </Typography>
+                </Box>
+
+                <Paper sx={{
+                    display: 'flex',
+                    gap: 4,
+                    p: 1.2,
+                    px: 3,
+                    bgcolor: '#1b2142',
+                    color: 'white',
+                    borderRadius: 2,
+                    alignItems: 'center',
+                    boxShadow: '0px 4px 10px rgba(0,0,0,0.15)'
+                }}>
+                    {/* Interceptions Box */}
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Total Interceptions</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{summary.totalInterceptions}</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', color: '#aaa', fontSize: '0.65rem', mt: -0.3 }}>100%</Typography>
+                    </Box>
+
+                    <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '35px', alignSelf: 'center' }} />
+
+                    {/* Conversions Box */}
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Total Conversions</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>{summary.totalConversions}</Typography>
+                        {/* Yahan percentage niche show ho rahi hai */}
+                        <Typography variant="caption" sx={{ display: 'block', color: '#4caf50', fontSize: '0.65rem', mt: -0.3 }}>
+                            {summary.overallRatio}%
+                        </Typography>
+                    </Box>
+
+                    <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '35px', alignSelf: 'center' }} />
+
+                    {/* Avg Ratio Box */}
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Success Rate</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ffeb3b' }}>{summary.overallRatio}%</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', color: '#1b2142', fontSize: '0.65rem', mt: -0.3 }}>_</Typography>
+                    </Box>
+                </Paper>
             </Box>
 
-            {/* Filter Section */}
-            <Paper sx={{ p: 2, mb: 1.5, borderRadius: 2 }}>
+            {/* FILTER SECTION (Two Rows) */}
+            <Paper sx={{ p: 1.5, mb: 1.5, borderRadius: 2, boxShadow: '0px 1px 5px rgba(0,0,0,0.08)' }}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                        <Box sx={{ width: '180px' }}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 0.5, display: 'block' }}>From Date</Typography>
+                    {/* ROW 1 */}
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5 }}>
+                        <Box sx={filterBoxStyle}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>From Date</Typography>
                             <DatePicker
                                 value={parseISO(filters.fromDate)}
                                 onChange={(v) => setFilters({ ...filters, fromDate: format(v, 'yyyy-MM-dd') })}
-                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiInputBase-input': { py: 0.8 } } } }}
                             />
                         </Box>
-                        <Box sx={{ width: '180px' }}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 0.5, display: 'block' }}>To Date</Typography>
+                        <Box sx={filterBoxStyle}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>To Date</Typography>
                             <DatePicker
                                 value={parseISO(filters.toDate)}
                                 onChange={(v) => setFilters({ ...filters, toDate: format(v, 'yyyy-MM-dd') })}
-                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiInputBase-input': { py: 0.8 } } } }}
                             />
                         </Box>
+                        <Box sx={filterBoxStyle}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>City</Typography>
+                            <TextField select fullWidth size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value, store_id: '' })}>
+                                <MenuItem value="">All Cities</MenuItem>
+                                {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                            </TextField>
+                        </Box>
+                    </Box>
 
-                        <TextField select label="City" size="small" value={filters.city_id}
-                            onChange={(e) => setFilters({ ...filters, city_id: e.target.value, store_id: '' })}
-                            sx={{ minWidth: '150px' }}>
-                            <MenuItem value="">All Cities</MenuItem>
-                            {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-                        </TextField>
-
-                        <TextField select label="Store" size="small" value={filters.store_id}
-                            onChange={(e) => setFilters({ ...filters, store_id: e.target.value })}
-                            sx={{ minWidth: '200px' }}>
-                            <MenuItem value="">All Stores</MenuItem>
-                            {stores.filter(s => !filters.city_id || String(s.city_id) === String(filters.city_id)).map(s => (
-                                <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>
-                            ))}
-                        </TextField>
-
-                        <TextField select label="BA Name" size="small" value={filters.ba_user_id}
-                            onChange={(e) => setFilters({ ...filters, ba_user_id: e.target.value })}
-                            sx={{ minWidth: '180px' }}>
-                            <MenuItem value="">All BAs</MenuItem>
-                            {users.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
-                        </TextField>
-
-                        <Button
-                            variant="contained"
-                            onClick={handleGenerateReport}
-                            disabled={loading}
-                            sx={{
-                                bgcolor: '#ab1d47',
-                                height: '40px',
-                                fontWeight: 'bold',
-                                '&:hover': { bgcolor: '#8e183a' }
-                            }}
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <FilterAlt />}
-                        >
-                            {loading ? "LOADING..." : "GENERATE"}
-                        </Button>
+                    {/* ROW 2 */}
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}>
+                        <Box sx={filterBoxStyle}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Store</Typography>
+                            <TextField select fullWidth size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })}>
+                                <MenuItem value="">All Stores</MenuItem>
+                                {stores.filter(s => !filters.city_id || String(s.city_id) === String(filters.city_id)).map(s => (
+                                    <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>
+                                ))}
+                            </TextField>
+                        </Box>
+                        <Box sx={filterBoxStyle}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>BA Name</Typography>
+                            <TextField select fullWidth size="small" value={filters.ba_user_id} onChange={(e) => setFilters({ ...filters, ba_user_id: e.target.value })}>
+                                <MenuItem value="">All BAs</MenuItem>
+                                {users.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
+                            </TextField>
+                        </Box>
+                        <Box sx={{ flex: 0.6, minWidth: '120px' }}>
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <FilterAlt sx={{ fontSize: '1.1rem' }} />}
+                                onClick={handleGenerateReport}
+                                disabled={loading}
+                                sx={{
+                                    bgcolor: '#ab1d47',
+                                    fontWeight: 'bold',
+                                    height: '35px',
+                                    fontSize: '0.85rem',
+                                    '&:hover': { bgcolor: '#8e183a' },
+                                    textTransform: 'none'
+                                }}
+                            >
+                                {loading ? 'Wait...' : 'Generate'}
+                            </Button>
+                        </Box>
                     </Box>
                 </LocalizationProvider>
             </Paper>
 
-            {/* Table Section */}
-            <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 200px)', borderRadius: 2 }}>
+            {/* TABLE SECTION */}
+            <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 280px)', borderRadius: 2 }}>
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
@@ -154,7 +219,10 @@ const InterceptionReport = () => {
                         ) : reportData.length > 0 ? (
                             reportData.map((row, idx) => (
                                 <TableRow key={idx} hover sx={{ '& td': { fontSize: '12px' } }}>
-                                    <TableCell align="center">{row.report_date}</TableCell>
+                                    {/* Yahan Date format fix kiya hai: 14 Mar 2026 */}
+                                    <TableCell align="center">
+                                        {row.report_date ? format(parseISO(row.report_date), 'dd MMM yyyy') : 'N/A'}
+                                    </TableCell>
                                     <TableCell align="center">{row.store?.city?.name || 'N/A'}</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 500 }}>{row.store?.store_name}</TableCell>
                                     <TableCell align="center">{row.beauty_advisor?.name || row.baName}</TableCell>

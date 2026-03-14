@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Pagination, IconButton, Button,
@@ -7,6 +7,15 @@ import {
 } from '@mui/material';
 import { Edit, Delete, Add, Search, Visibility } from '@mui/icons-material';
 import API from '../api/API';
+import { AuthContext } from '../context/AuthContext';
+
+const ROLES = [
+    { value: 'admin', label: 'Admin' },
+    { value: 'ccadmin', label: 'CC Admin' },
+    { value: 'brandadmin', label: 'Brand Admin' },
+    { value: 'supervisor', label: 'Supervisor' },
+    { value: 'user', label: 'User' }
+];
 
 const Users = () => {
     // Data States
@@ -15,6 +24,10 @@ const Users = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
+
+
+    const { user } = useContext(AuthContext);
+    const userRole = user?.role;
 
     // Dropdown States
     const [cities, setCities] = useState([]);
@@ -41,11 +54,13 @@ const Users = () => {
         setLoading(true);
         try {
             const res = await API.get(`/users?page=${page}&limit=10&search=${search}`);
-            console.log("users :::::", res.data.users);
             setUsers(res.data.users);
             setTotalPages(res.data.totalPages);
-            // ReportTo ke liye hum users ki list hi use kar lete hain (Jo supervisor hon)
-            setSupervisors(res.data.users.filter(u => u.role === 'supervisor' || u.role === 'admin'));
+            console.log("usersss ...", res.data.users)
+
+
+
+
         } catch (err) { console.error("Fetch Error:", err); }
         finally { setLoading(false); }
     }, [page, search]);
@@ -54,13 +69,34 @@ const Users = () => {
     useEffect(() => {
         const fetchDropdowns = async () => {
             try {
-                const [c, r, d] = await Promise.all([
+                const [c, r, d, u] = await Promise.all([
                     API.get('/cities'),
                     API.get('/regions'),
-                    API.get('/designations')
+                    API.get('/designations'),
+                    API.get('/users?limit=1000') // Saare users mangwaye
                 ]);
-                setCities(c.data); setRegions(r.data); setDesignations(d.data);
-            } catch (err) { console.error("Dropdown Error:", err); }
+
+                setCities(c.data);
+                setRegions(r.data);
+                setDesignations(d.data);
+
+                // FIX: Pehle check karein ke data users array mein hai ya direct data hai
+                const allUsersArray = u.data.users || u.data;
+
+                const potentialManagers = allUsersArray.filter(user => {
+                    // Designation check karein (Exactly 'Supervisor' jaisa console mein tha)
+                    const designationName = user.designation?.name || '';
+
+                    // Agar aap Admin ko bhi list mein chahte hain toh wo bhi add kar sakte hain
+                    return designationName === 'Supervisor';
+                });
+
+                console.log("Filtered Supervisors:", potentialManagers); // Check karein console mein list aa rahi hai
+                setSupervisors(potentialManagers);
+
+            } catch (err) {
+                console.error("Dropdown Error:", err);
+            }
         };
         fetchDropdowns();
     }, []);
@@ -259,9 +295,11 @@ const Users = () => {
                                             <IconButton onClick={() => handleOpen('edit', u)} size="small" color="primary">
                                                 <Edit sx={{ fontSize: 18 }} />
                                             </IconButton>
-                                            <IconButton onClick={() => handleDelete(u.id)} size="small" color="error">
-                                                <Delete sx={{ fontSize: 18 }} />
-                                            </IconButton>
+                                            {(userRole === 'admin') && (
+                                                <IconButton onClick={() => handleDelete(u.id)} size="small" color="error">
+                                                    <Delete sx={{ fontSize: 18 }} />
+                                                </IconButton>
+                                            )}
                                         </Stack>
                                     </TableCell>
                                 </TableRow>
@@ -367,7 +405,7 @@ const Users = () => {
                     {/* ROW 3: Reporting To, User Name, Password */}
                     <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                         <Box sx={{ flex: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Reporting To (Supervisor)</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Reporting To </Typography>
                             <TextField
                                 select fullWidth size="small"
                                 disabled={mode === 'view'}
@@ -376,6 +414,17 @@ const Users = () => {
                             >
                                 <MenuItem value=""><em>No Manager / Self</em></MenuItem>
                                 {supervisors.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
+                            </TextField>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Role</Typography>
+                            <TextField
+                                select fullWidth size="small"
+                                disabled={mode === 'view'}
+                                value={formData.role}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                            >
+                                {ROLES.map(r => <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>)}
                             </TextField>
                         </Box>
                         <Box sx={{ flex: 1 }}>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon,
-  ListItemText, Toolbar, Box, Collapse
+  ListItemText, Toolbar, Box, Collapse, Divider, Typography
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -14,68 +14,120 @@ import {
   BarChart as BarChartIcon
 } from '@mui/icons-material';
 
+import { AuthContext } from '../context/AuthContext';
+
 const drawerWidth = 240;
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  // user object from context 
+  const { user } = useContext(AuthContext);
+  const userRole = user?.role;
+  console.log("user role in side baar .. ", userRole);
 
-  // Reports menu ko open/close karne ki state
-  const [openReports, setOpenReports] = useState(false);
+
+  // Reports menu state
+  const [openReports, setOpenReports] = useState(true); // Default open rakh raha hoon taake nazar aaye
 
   const handleReportsClick = () => {
     setOpenReports(!openReports);
   };
+
+  // Helper function for active styles
+  const isActive = (path) => location.pathname === path;
 
   return (
     <Drawer
       variant="permanent"
       sx={{
         width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', bgcolor: '#f4f4f4' },
+        [`& .MuiDrawer-paper`]: {
+          flexShrink: 0,
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          bgcolor: '#f4f4f4',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          overflow: 'hidden', // Drawer khud scroll nahi hoga
+          borderRight: '1px solid #ddd'
+        },
       }}
     >
       <Toolbar />
-      <Box sx={{ overflow: 'auto', mt: 2 }}>
+
+      {/* --- SECTION 1: SCROLLABLE MENU (80%) --- */}
+      <Box sx={{
+        flexGrow: 1,
+        overflowY: 'auto',
+        mt: 1,
+        px: 1,
+        '&::-webkit-scrollbar': { width: '4px' },
+        '&::-webkit-scrollbar-thumb': { bgcolor: '#ccc', borderRadius: '10px' }
+      }}>
         <List>
-          {/* --- Regular Menus --- */}
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/dashboard')} selected={location.pathname === '/dashboard'}>
+          {/* Dashboard */}
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => navigate('/dashboard')}
+              selected={isActive('/dashboard')}
+              sx={{ borderRadius: 2 }}
+            >
               <ListItemIcon sx={{ color: '#1b2142' }}><DashboardIcon /></ListItemIcon>
               <ListItemText primary="Dashboard" />
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/users')} selected={location.pathname === '/users'}>
-              <ListItemIcon sx={{ color: '#1b2142' }}><PeopleIcon /></ListItemIcon>
-              <ListItemText primary="Users" />
-            </ListItemButton>
-          </ListItem>
 
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/stores')} selected={location.pathname === '/stores'}>
+
+          {/* Users */}
+          {(userRole === 'admin' || userRole === 'ccadmin') && (
+            <ListItem disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                onClick={() => navigate('/users')}
+                selected={isActive('/users')}
+                sx={{ borderRadius: 2 }}
+              >
+                <ListItemIcon sx={{ color: '#1b2142' }}><PeopleIcon /></ListItemIcon>
+                <ListItemText primary="Users" />
+              </ListItemButton>
+            </ListItem>
+          )}
+
+
+
+          {/* Stores */}
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => navigate('/stores')}
+              selected={isActive('/stores')}
+              sx={{ borderRadius: 2 }}
+            >
               <ListItemIcon sx={{ color: '#1b2142' }}><StoreIcon /></ListItemIcon>
               <ListItemText primary="Stores" />
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/items')} selected={location.pathname === '/items'}>
+          {/* Items */}
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => navigate('/items')}
+              selected={isActive('/items')}
+              sx={{ borderRadius: 2 }}
+            >
               <ListItemIcon sx={{ color: '#1b2142' }}><InventoryIcon /></ListItemIcon>
               <ListItemText primary="Items" />
             </ListItemButton>
           </ListItem>
 
           {/* --- NESTED REPORTS MENU --- */}
-          {/* --- NESTED REPORTS MENU --- */}
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleReportsClick}>
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton onClick={handleReportsClick} sx={{ borderRadius: 2 }}>
               <ListItemIcon sx={{ color: '#1b2142' }}>
                 <BarChartIcon />
               </ListItemIcon>
-              <ListItemText primary="Reports" />
+              <ListItemText primary="Reports" sx={{ fontWeight: 'bold' }} />
               {openReports ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
           </ListItem>
@@ -83,128 +135,70 @@ const Sidebar = () => {
           <Collapse in={openReports} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
 
-              {/* 1. Attendance Report */}
-              <ListItemButton
-                sx={{
-                  pl: 4,
-                  '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#f0f0f0' },
-                  '&.Mui-selected:hover': { bgcolor: '#e0e0e0' }
-                }}
-                onClick={() => navigate('/attendance-report')}
-                selected={location.pathname === '/attendance-report'}
-              >
-                <ListItemIcon sx={{ color: location.pathname === '/attendance-report' ? '#ab1d47' : '#1b2142' }}>
-                  <AssessmentIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Attendance Report"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: location.pathname === '/attendance-report' ? 'bold' : 'normal',
-                    color: location.pathname === '/attendance-report' ? '#ab1d47' : 'inherit'
+              {[
+                { name: 'Attendance Report', path: '/attendance-report' },
+                { name: 'Daily Sales Report', path: '/sales-report' },
+                { name: 'Summary Sales Report', path: '/summary-report' },
+                { name: 'Short Items Report', path: '/short-items-report' },
+                { name: 'Interception Reports', path: '/interception-report' }
+              ].map((report) => (
+                <ListItemButton
+                  key={report.path}
+                  onClick={() => navigate(report.path)}
+                  selected={isActive(report.path)}
+                  sx={{
+                    pl: 4,
+                    my: 0.2,
+                    mx: 1,
+                    borderRadius: '8px',
+                    '&.Mui-selected': {
+                      borderRight: '4px solid #ab1d47',
+                      bgcolor: '#e8eaf6'
+                    },
                   }}
-                />
-              </ListItemButton>
-
-              {/* 2. Sales Report */}
-              <ListItemButton
-                sx={{
-                  pl: 4,
-                  '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#f0f0f0' },
-                  '&.Mui-selected:hover': { bgcolor: '#e0e0e0' }
-                }}
-                onClick={() => navigate('/sales-report')}
-                selected={location.pathname === '/sales-report'} // 👈 Corrected
-              >
-                <ListItemIcon sx={{ color: location.pathname === '/sales-report' ? '#ab1d47' : '#1b2142' }}> {/* 👈 Fixed logic here */}
-                  <AssessmentIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Daily Sales Report"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: location.pathname === '/sales-report' ? 'bold' : 'normal',
-                    color: location.pathname === '/sales-report' ? '#ab1d47' : 'inherit'
-                  }}
-                />
-              </ListItemButton>
-
-
-
-              {/* 2. Sales Report */}
-              <ListItemButton
-                sx={{
-                  pl: 4,
-                  '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#f0f0f0' },
-                  '&.Mui-selected:hover': { bgcolor: '#e0e0e0' }
-                }}
-                onClick={() => navigate('/summary-report')}
-                selected={location.pathname === '/summary-report'} // 👈 Corrected
-              >
-                <ListItemIcon sx={{ color: location.pathname === '/summary-report' ? '#ab1d47' : '#1b2142' }}> {/* 👈 Fixed logic here */}
-                  <AssessmentIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Summary Sales Report"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: location.pathname === '/summary-report' ? 'bold' : 'normal',
-                    color: location.pathname === '/summary-report' ? '#ab1d47' : 'inherit'
-                  }}
-                />
-              </ListItemButton>
-
-
-
-              <ListItemButton
-                sx={{
-                  pl: 4,
-                  '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#f0f0f0' },
-                  '&.Mui-selected:hover': { bgcolor: '#e0e0e0' }
-                }}
-                onClick={() => navigate('/short-items-report')}
-                selected={location.pathname === '/short-items-report'} // 👈 Corrected
-              >
-                <ListItemIcon sx={{ color: location.pathname === '/short-items-report' ? '#ab1d47' : '#1b2142' }}> {/* 👈 Fixed logic here */}
-                  <AssessmentIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Short Items Report"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: location.pathname === '/short-items-report' ? 'bold' : 'normal',
-                    color: location.pathname === '/short-items-report' ? '#ab1d47' : 'inherit'
-                  }}
-                />
-              </ListItemButton>
-
-
-              <ListItemButton
-                sx={{
-                  pl: 4,
-                  '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#f0f0f0' },
-                  '&.Mui-selected:hover': { bgcolor: '#e0e0e0' }
-                }}
-                onClick={() => navigate('/interception-report')}
-                selected={location.pathname === '/interception-report'} // 👈 Corrected
-              >
-                <ListItemIcon sx={{ color: location.pathname === '/interception-report' ? '#ab1d47' : '#1b2142' }}> {/* 👈 Fixed logic here */}
-                  <AssessmentIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Interception Reports"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: location.pathname === '/interception-report' ? 'bold' : 'normal',
-                    color: location.pathname === '/interception-report' ? '#ab1d47' : 'inherit'
-                  }}
-                />
-              </ListItemButton>
-
-
+                >
+                  <ListItemIcon sx={{ minWidth: 35 }}>
+                    <AssessmentIcon fontSize="small" sx={{ color: isActive(report.path) ? '#ab1d47' : '#555' }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={report.name}
+                    primaryTypographyProps={{
+                      fontSize: '0.85rem',
+                      fontWeight: isActive(report.path) ? 'bold' : 'normal',
+                      color: isActive(report.path) ? '#ab1d47' : '#333'
+                    }}
+                  />
+                </ListItemButton>
+              ))}
             </List>
           </Collapse>
         </List>
+      </Box>
+
+      {/* --- SECTION 2: FIXED FOOTER (FULL WIDTH) --- */}
+      <Box sx={{
+        textAlign: 'center',
+        bgcolor: '#ffffff', // Background pure white kar diya
+        borderTop: '1px solid #ddd',
+        mt: 'auto', // Pushes to the very bottom
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        py: 1.5, // Upar niche halki space (Height kam karne ke liye)
+        // p: 2 ko hata diya taake side par space na bache
+      }}>
+        <img
+          src="/rivaj-logo.jpeg"
+          alt="Ravaj Logo"
+          style={{
+            width: 'auto',       // Width auto taake original ratio barqarar rahe
+            height: '32px',      // Height control kar li taake zyada jagah na ghere
+            maxWidth: '180px',   // Max width thori barha di taake logo saaf dikhe
+            objectFit: 'contain',
+            display: 'block'
+          }}
+        />
       </Box>
     </Drawer>
   );

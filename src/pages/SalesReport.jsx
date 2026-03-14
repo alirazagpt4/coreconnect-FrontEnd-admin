@@ -10,7 +10,10 @@ import { Assessment, FilterAlt, ReceiptLong } from '@mui/icons-material';
 import API from '../api/API';
 
 const SalesReport = () => {
-    const [reportData, setReportData] = useState({ summary: {}, data: [] });
+    const [reportData, setReportData] = useState({
+        data: [],
+        summary: { totalTransactions: 0, grandTotalQty: 0, grandTotalAmount: 0 }
+    });
     const [loading, setLoading] = useState(false);
 
     // Dropdown States
@@ -107,22 +110,62 @@ const SalesReport = () => {
         <>
 
             <Box sx={{ p: 1.5, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                {/* TOP HEADER: Title + Grand Totals */}
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 2,
+                    flexWrap: 'wrap',
+                    gap: 2
+                }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Assessment sx={{ mr: 1, color: '#ab1d47' }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>Daily Sales Report</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>
+                            Sales Report
+                        </Typography>
                     </Box>
 
-                    {/* GRAND TOTAL SUMMARY HEADER */}
-                    {reportData.summary.totalTransactions > 0 && (
-                        <Paper sx={{ display: 'flex', gap: 3, p: 1, px: 3, bgcolor: '#1b2142', color: 'white', borderRadius: 2 }}>
-                            <Box><Typography variant="caption">Transactions</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{reportData.summary.totalTransactions}</Typography></Box>
-                            <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444' }} />
-                            <Box><Typography variant="caption">Sold Qty</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{reportData.summary.grandTotalQty?.toLocaleString()}</Typography></Box>
-                            <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444' }} />
-                            <Box><Typography variant="caption">Total Value</Typography><Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>Rs. {Math.round(reportData.summary.grandTotalAmount).toLocaleString()}</Typography></Box>
-                        </Paper>
-                    )}
+                    {/* GRAND TOTAL SUMMARY (Hamesha nazar aayega) */}
+                    <Paper sx={{
+                        display: 'flex',
+                        gap: 4,
+                        p: 1.2,
+                        px: 3,
+                        bgcolor: '#1b2142',
+                        color: 'white',
+                        borderRadius: 2,
+                        alignItems: 'center',
+                        boxShadow: '0px 4px 10px rgba(0,0,0,0.15)'
+                    }}>
+                        {/* Transactions */}
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Transactions</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                {reportData?.summary?.totalTransactions || 0}
+                            </Typography>
+                        </Box>
+
+                        <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '25px', alignSelf: 'center' }} />
+
+                        {/* Sold Qty */}
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Sold Qty</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ffeb3b' }}>
+                                {(reportData?.summary?.grandTotalQty || 0).toLocaleString()}
+                            </Typography>
+                        </Box>
+
+                        <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '25px', alignSelf: 'center' }} />
+
+                        {/* Total Value */}
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Total Value</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
+                                Rs. {Math.round(reportData?.summary?.grandTotalAmount || 0).toLocaleString()}
+                            </Typography>
+                        </Box>
+                    </Paper>
                 </Box>
 
                 <Paper sx={{ p: 2, mb: 1.5, borderRadius: 2 }}>

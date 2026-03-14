@@ -25,7 +25,7 @@ function App() {
         {/* 1. Login Route: Agar token hai toh seedha Users pe bhej do, warna Login dikhao */}
         <Route
           path="/login"
-          element={!token ? <Login /> : <Navigate to="/users" />}
+          element={!token ? <Login /> : <Navigate to="/dashboard" />}
         />
 
         {/* 2. Protected Routes: Ye routes sirf tabhi chalenge jab token hoga */}
@@ -34,7 +34,7 @@ function App() {
           element={token ? <Layout /> : <Navigate to="/login" />}
         >
           {/* Default page jab user "/" pe aaye */}
-          <Route index element={<Navigate to="/users" />} />
+          <Route index element={<Navigate to="/dashboard" />} />
 
           {/* Main Pages jo Layout (Header+Sidebar) ke andar render honge */}
           <Route path="dashboard" element={<Dashboard />} />
