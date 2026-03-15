@@ -96,10 +96,9 @@ const AttendanceReport = () => {
 
 
     // download to excel
-    // download to excel
     const downloadExcel = () => {
         if (report.length === 0) {
-            alert("Pehle report generate karein!");
+            alert("please generate report first");
             return;
         }
 
@@ -110,7 +109,7 @@ const AttendanceReport = () => {
             "Area": row.area || 'N/A',
             "Store Name": row.storeName,
             "BA Name": row.baName,
-            "Check-in Time": row.time || '00:00',
+            "Time": row.time || '00:00',
             "Status": row.attendance
         }));
 
@@ -239,7 +238,7 @@ const AttendanceReport = () => {
                             </TextField>
                         </Box>
 
-                  
+
                         {/* Compact Buttons Container */}
                         <Box sx={{ flex: 0.8, minWidth: '180px', display: 'flex', gap: 1 }}>
                             <Button
@@ -265,7 +264,7 @@ const AttendanceReport = () => {
                                 variant="contained"
                                 color="success"
                                 onClick={downloadExcel}
-                               disabled={loading || report.length === 0}
+                                disabled={loading || report.length === 0}
                                 sx={{
                                     bgcolor: '#2e7d32',
                                     fontWeight: 'bold',
