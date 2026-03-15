@@ -88,12 +88,48 @@ export const handleExportToExcel = async (data, fileName) => {
         });
     });
 
-    // --- 4. COLUMN WIDTH (Adaptive) ---
-    worksheet.columns.forEach(col => {
-        col.width = 22; // Professional fixed width or you can make it dynamic
+    // --- 5. DYNAMIC COLUMN WIDTH & WRAP TEXT LOGIC ---
+    worksheet.columns.forEach((column) => {
+        let maxColumnLength = 0;
+
+        column.eachCell({ includeEmpty: true }, (cell) => {
+            // Header (Row 5) aur Data Cells dono ki length check karein
+            const cellValue = cell.value ? cell.value.toString() : "";
+            const columnLength = cellValue.length;
+
+            if (columnLength > maxColumnLength) {
+                maxColumnLength = columnLength;
+            }
+
+            // PRODUCT NAME wale column ke liye wrapping on karein
+            // Agar text 40 characters se bara ho toh wrap karein
+            cell.alignment = {
+                vertical: 'middle',
+                horizontal: 'center',
+                wrapText: true // Yeh lamba text niche wali line mein le ayega
+            };
+        });
+
+        // Professional Width Logic
+        // Agar text bohot lamba hai toh max width 50 rakhein, warna dynamic
+        let dynamicWidth = maxColumnLength + 5;
+        if (dynamicWidth > 50) {
+            column.width = 50; // Max limit taake sheet bikhre na
+        } else if (dynamicWidth < 15) {
+            column.width = 15; // Min limit taake header saaf dikhe
+        } else {
+            column.width = dynamicWidth;
+        }
     });
 
-    // --- 5. SAVE ---
+    // Row height ko auto adjust hone dein taake wrapped text nazar aaye
+    worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 5) { // Data rows ke liye
+            row.height = undefined; // Excel ko khud manage karne dein (Auto-fit height)
+        }
+    });
+
+    // --- 6. SAVE ---
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `${fileName}.xlsx`);
 };

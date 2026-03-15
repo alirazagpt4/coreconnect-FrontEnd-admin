@@ -128,9 +128,9 @@ const SalesReport = () => {
                     "Category": item.cat,
                     "Sub Category": item.subCat,
                     "Product Name": item.itemName,
-                    "MRP": item.rp,
-                    "Quantity": item.qty,
-                    "Total Value": item.value
+                    "MRP": item.rp.toLocaleString(),
+                    "Qty": item.qty.toLocaleString(),
+                    "Total Value": item.value.toLocaleString()
                 });
             });
 
