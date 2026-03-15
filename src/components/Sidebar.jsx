@@ -175,27 +175,27 @@ const Sidebar = () => {
         </List>
       </Box>
 
-      {/* --- SECTION 2: FIXED FOOTER (FULL WIDTH) --- */}
+
+
+      {/* --- SECTION 2: FIXED FOOTER --- */}
       <Box sx={{
-        textAlign: 'center',
-        bgcolor: '#ffffff', // Background pure white kar diya
-        borderTop: '1px solid #ddd',
-        mt: 'auto', // Pushes to the very bottom
+
+        mt: 'auto',
         width: '100%',
         display: 'flex',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        py: 1.5, // Upar niche halki space (Height kam karne ke liye)
-        // p: 2 ko hata diya taake side par space na bache
+        py: 2.5, // Upar niche thori jagah
+        px: 1,   // Left side se thora andar (Is se professional lagega)
       }}>
         <img
-          src="/rivaj-logo.jpeg"
-          alt="Ravaj Logo"
+          src="/rivaj.png"
+          alt="Rivaj Logo"
           style={{
-            width: 'auto',       // Width auto taake original ratio barqarar rahe
-            height: '32px',      // Height control kar li taake zyada jagah na ghere
-            maxWidth: '180px',   // Max width thori barha di taake logo saaf dikhe
+            height: '40px',      // Height bohot zyada bari bhi ajeeb lagti hai
+            width: 'auto',
             objectFit: 'contain',
+            filter: 'contrast(1.1)', // Logo ko thora sharp karne ke liye
             display: 'block'
           }}
         />

@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import { Assessment, FilterAlt, AdsClick, ShoppingBag, Percent } from '@mui/icons-material';
 import API from '../api/API';
+import { handleExportToExcel } from '../utils/exportUtils.js';
 
 const filterBoxStyle = { flex: 1, minWidth: '150px' };
 
@@ -70,6 +71,30 @@ const InterceptionReport = () => {
         }
     };
 
+
+
+    const downloadExcel = () => {
+        if (reportData.length === 0) {
+            alert("Pehle report generate karein!");
+            return;
+        }
+
+        // Interception Report ke columns ki mapping
+        const formattedData = reportData.map(row => ({
+            "Date": row.report_date ? format(parseISO(row.report_date), 'dd MMM yyyy') : 'N/A',
+            "City": row.store?.city?.name || 'N/A',
+            "Store Name": row.store?.store_name || 'N/A',
+            "BA Name": row.beauty_advisor?.name || row.baName || 'N/A',
+            "Intercepted": row.intercepted || 0,
+            "Converted": row.converted || 0,
+            "Ratio (%)": `${row.ratio || 0}%`
+        }));
+
+        handleExportToExcel(formattedData, "Interception_Report");
+    };
+
+
+
     return (
         <Box sx={{ p: 1.5, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
 
@@ -104,7 +129,7 @@ const InterceptionReport = () => {
                     <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Total Interceptions</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{summary.totalInterceptions}</Typography>
-                        <Typography variant="caption" sx={{ display: 'block', color: '#aaa', fontSize: '0.65rem', mt: -0.3 }}>100%</Typography>
+
                     </Box>
 
                     <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '35px', alignSelf: 'center' }} />
@@ -113,10 +138,7 @@ const InterceptionReport = () => {
                     <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Total Conversions</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>{summary.totalConversions}</Typography>
-                        {/* Yahan percentage niche show ho rahi hai */}
-                        <Typography variant="caption" sx={{ display: 'block', color: '#4caf50', fontSize: '0.65rem', mt: -0.3 }}>
-                            {summary.overallRatio}%
-                        </Typography>
+
                     </Box>
 
                     <Divider orientation="vertical" flexItem sx={{ bgcolor: '#444', height: '35px', alignSelf: 'center' }} />
@@ -125,7 +147,6 @@ const InterceptionReport = () => {
                     <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Success Rate</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ffeb3b' }}>{summary.overallRatio}%</Typography>
-                        <Typography variant="caption" sx={{ display: 'block', color: '#1b2142', fontSize: '0.65rem', mt: -0.3 }}>_</Typography>
                     </Box>
                 </Paper>
             </Box>
@@ -178,7 +199,8 @@ const InterceptionReport = () => {
                                 {users.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
                             </TextField>
                         </Box>
-                        <Box sx={{ flex: 0.6, minWidth: '120px' }}>
+                        {/* Compact Buttons Container */}
+                        <Box sx={{ flex: 0.8, minWidth: '180px', display: 'flex', gap: 1 }}>
                             <Button
                                 fullWidth
                                 variant="contained"
@@ -195,6 +217,24 @@ const InterceptionReport = () => {
                                 }}
                             >
                                 {loading ? 'Wait...' : 'Generate'}
+                            </Button>
+
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                color="success"
+                                onClick={downloadExcel}
+                                disabled={loading || reportData.length === 0}
+                                sx={{
+                                    bgcolor: '#2e7d32',
+                                    fontWeight: 'bold',
+                                    height: '35px',
+                                    fontSize: '0.85rem',
+                                    '&:hover': { bgcolor: '#1b5e20' },
+                                    textTransform: 'none'
+                                }}
+                            >
+                                Export
                             </Button>
                         </Box>
                     </Box>

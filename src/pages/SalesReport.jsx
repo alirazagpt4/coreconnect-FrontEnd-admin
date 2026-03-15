@@ -6,8 +6,10 @@ import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Button, CircularProgress, MenuItem, Divider
 } from '@mui/material';
-import { Assessment, FilterAlt, ReceiptLong } from '@mui/icons-material';
+import { Assessment, FileDownload, FilterAlt, ReceiptLong } from '@mui/icons-material';
 import API from '../api/API';
+
+import { handleExportToExcel } from '../utils/exportUtils.js';
 
 const SalesReport = () => {
     const [reportData, setReportData] = useState({
@@ -105,6 +107,56 @@ const SalesReport = () => {
 
     const filterBoxStyle = { flex: 1, minWidth: '120px' };
     const dateBoxStyle = { flex: 0.6, minWidth: '100px' };
+
+
+    const downloadExcel = () => {
+        if (!reportData.data || reportData.data.length === 0) {
+            alert("generate report first");
+            return;
+        }
+
+        const rowsForExcel = [];
+
+        // 1. Transactions aur Items ka data add karein
+        reportData.data.forEach((transaction) => {
+            transaction.items.forEach((item) => {
+                rowsForExcel.push({
+                    "Date": transaction.date,
+                    "City": transaction.city,
+                    "Store": transaction.store,
+                    "BA Name": transaction.baName,
+                    "Category": item.cat,
+                    "Sub Category": item.subCat,
+                    "Product Name": item.itemName,
+                    "MRP": item.rp,
+                    "Quantity": item.qty,
+                    "Total Value": item.value
+                });
+            });
+
+            // Transaction ka sub-total line
+            rowsForExcel.push({
+                "Date": "", "City": "", "Store": "", "BA Name": "TRANSACTION TOTAL",
+                "Category": "", "Sub Category": "", "Product Name": "", "MRP": "",
+                "Quantity": transaction.subTotalQty,
+                "Total Value": transaction.subTotalAmount
+            });
+
+            // Ek khali line gap ke liye
+            rowsForExcel.push({});
+        });
+
+        // 2. Sab se niche Grand Total add karein
+        rowsForExcel.push({
+            "Date": "GRAND TOTAL",
+            "City": "", "Store": "", "BA Name": "", "Category": "", "Sub Category": "", "Product Name": "", "MRP": "",
+            "Quantity": reportData.summary.grandTotalQty,
+            "Total Value": reportData.summary.grandTotalAmount
+        });
+
+        // Util function ko call karein
+        handleExportToExcel(rowsForExcel, "Sales_Report");
+    };
 
     return (
         <>
@@ -275,6 +327,16 @@ const SalesReport = () => {
                                 startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <FilterAlt />}
                             >
                                 {loading ? "FETCHING..." : "GENERATE"}
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                onClick={downloadExcel}
+                                disabled={loading || reportData.data.length === 0}
+                                startIcon={<FileDownload />}
+                                sx={{ height: '40px', fontWeight: 'bold', ml: 1 }}
+                            >
+                                Export
                             </Button>
                         </Box>
                     </LocalizationProvider>

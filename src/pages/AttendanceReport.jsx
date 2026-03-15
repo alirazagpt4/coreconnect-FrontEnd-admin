@@ -7,10 +7,13 @@ import {
     TableHead, TableRow, TextField, Button, CircularProgress,
     MenuItem, Chip, IconButton, Divider
 } from '@mui/material';
-import { LocationOn, Visibility, Assessment } from '@mui/icons-material';
+import { LocationOn, Visibility, Assessment, FilterAlt } from '@mui/icons-material';
 import API from '../api/API';
+import { handleExportToExcel } from '../utils/exportUtils.js';
 
 const AttendanceReport = () => {
+
+
     // Data States
     const [report, setReport] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -90,6 +93,30 @@ const AttendanceReport = () => {
 
     // Common Style for equal boxes
     const filterBoxStyle = { flex: 1, minWidth: '150px' };
+
+
+    // download to excel
+    // download to excel
+    const downloadExcel = () => {
+        if (report.length === 0) {
+            alert("Pehle report generate karein!");
+            return;
+        }
+
+        // Data ko format kar rahe hain (Sirf zaroori columns)
+        const formattedData = report.map(row => ({
+            "Date": row.date,
+            "City": row.city,
+            "Area": row.area || 'N/A',
+            "Store Name": row.storeName,
+            "BA Name": row.baName,
+            "Check-in Time": row.time || '00:00',
+            "Status": row.attendance
+        }));
+
+        // Utility function ko call kar rahe hain
+        handleExportToExcel(formattedData, "Attendance_Report");
+    };
 
     return (
         <Box sx={{ p: 2, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
@@ -212,12 +239,13 @@ const AttendanceReport = () => {
                             </TextField>
                         </Box>
 
-                        {/* Compact Button */}
-                        <Box sx={{ flex: 0.6, minWidth: '120px' }}>
+                  
+                        {/* Compact Buttons Container */}
+                        <Box sx={{ flex: 0.8, minWidth: '180px', display: 'flex', gap: 1 }}>
                             <Button
                                 fullWidth
                                 variant="contained"
-                                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Assessment sx={{ fontSize: '1.1rem' }} />}
+                                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <FilterAlt sx={{ fontSize: '1.1rem' }} />}
                                 onClick={handleGenerateReport}
                                 disabled={loading}
                                 sx={{
@@ -230,6 +258,24 @@ const AttendanceReport = () => {
                                 }}
                             >
                                 {loading ? 'Wait...' : 'Generate'}
+                            </Button>
+
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                color="success"
+                                onClick={downloadExcel}
+                               disabled={loading || report.length === 0}
+                                sx={{
+                                    bgcolor: '#2e7d32',
+                                    fontWeight: 'bold',
+                                    height: '35px',
+                                    fontSize: '0.85rem',
+                                    '&:hover': { bgcolor: '#1b5e20' },
+                                    textTransform: 'none'
+                                }}
+                            >
+                                Export
                             </Button>
                         </Box>
                     </Box>

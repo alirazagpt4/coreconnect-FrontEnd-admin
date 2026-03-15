@@ -6,8 +6,9 @@ import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Button, CircularProgress, MenuItem
 } from '@mui/material';
-import { Summarize, FilterAlt } from '@mui/icons-material';
+import { Summarize, FilterAlt, FileDownload } from '@mui/icons-material';
 import API from '../api/API';
+import { handleExportToExcel } from '../utils/exportUtils';
 
 const SummaryReport = () => {
     const [report, setReport] = useState([]);
@@ -100,6 +101,27 @@ const SummaryReport = () => {
 
     const dateBoxStyle = { width: '180px' };
 
+    const downloadExcel = () => {
+        if (!report || report.length === 0) {
+            alert("Pehle report generate karein!");
+            return;
+        }
+
+        // Data ko Excel format ke liye map karna
+        const rowsForExcel = report.map((row) => ({
+            "Date": row.date,
+            "City": row.city,
+            "Store Name": row.storeName,
+            "BA Name": row.baName,
+            "Category": row.cat,
+            "Sub Category": row.subCat,
+            "Total Qty": row.totalQty,
+            "Total Value": Math.round(row.totalValue)
+        }));
+
+        handleExportToExcel(rowsForExcel, "Summary_Sales_Report");
+    };
+
     return (
         <Box sx={{ p: 1.5, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
@@ -167,6 +189,21 @@ const SummaryReport = () => {
                             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <FilterAlt />}
                         >
                             {loading ? "FETCHING..." : "GENERATE"}
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={downloadExcel}
+                            disabled={loading || report.length === 0}
+                            startIcon={<FileDownload />}
+                            sx={{
+                                height: '40px',
+                                fontWeight: 'bold',
+                                bgcolor: '#2e7d32',
+                                '&:hover': { bgcolor: '#1b5e20' }
+                            }}
+                        >
+                            EXPORT
                         </Button>
                     </Box>
                 </LocalizationProvider>

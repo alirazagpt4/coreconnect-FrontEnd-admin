@@ -6,8 +6,9 @@ import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Button, CircularProgress, MenuItem
 } from '@mui/material';
-import { Inventory, FilterAlt } from '@mui/icons-material';
+import { Inventory, FilterAlt, FileDownload } from '@mui/icons-material';
 import API from '../api/API';
+import { handleExportToExcel } from '../utils/exportUtils';
 
 const ShortItemsReport = () => {
     const [reportData, setReportData] = useState([]);
@@ -93,6 +94,29 @@ const ShortItemsReport = () => {
         } catch (e) {
             return dateStr;
         }
+    };
+
+
+
+    const downloadExcel = () => {
+        if (!reportData || reportData.length === 0) {
+            alert("generate report first!");
+            return;
+        }
+
+        // Data ko Excel format ke liye flat karna
+        const rowsForExcel = reportData.map((row) => ({
+            "Date": formatDateDisplay(row.date),
+            "City": row.cityName,
+            "Store": row.storeName,
+            "Area": row.areaName || row.area || 'N/A',
+            "BA Name": row.baName,
+            "Category": row.categoryName,
+            "Sub Category": row.subCategoryName,
+            "Item Name": row.itemName
+        }));
+
+        handleExportToExcel(rowsForExcel, "Short_Items_Report");
     };
 
     return (
@@ -181,6 +205,21 @@ const ShortItemsReport = () => {
                             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <FilterAlt />}
                         >
                             {loading ? "FETCHING..." : "GENERATE"}
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={downloadExcel}
+                            disabled={loading || reportData.length === 0}
+                            startIcon={<FileDownload />}
+                            sx={{
+                                height: '40px',
+                                fontWeight: 'bold',
+                                ml: 1.5,
+                                bgcolor: '#2e7d32'
+                            }}
+                        >
+                            EXPORT
                         </Button>
                     </Box>
                 </LocalizationProvider>

@@ -1,4 +1,4 @@
-import { Box  , Typography} from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 const Footer = () => {
     return (
@@ -7,8 +7,7 @@ const Footer = () => {
             sx={{
                 py: 2,
                 px: 3,
-                backgroundColor: '#ffffff',
-                borderTop: '1px solid #e0e0e0',
+
                 textAlign: 'center',
                 width: '100%',
             }}
