@@ -128,9 +128,9 @@ const SalesReport = () => {
                     "Category": item.cat,
                     "Sub Category": item.subCat,
                     "Product Name": item.itemName,
-                    "MRP": item.rp.toLocaleString(),
-                    "Qty": item.qty.toLocaleString(),
-                    "Total Value": item.value.toLocaleString()
+                    "MRP": item.rp,
+                    "Qty": item.qty,
+                    "Total Value": item.value
                 });
             });
 
@@ -142,8 +142,8 @@ const SalesReport = () => {
                 "Total Value": transaction.subTotalAmount
             });
 
-            // Ek khali line gap ke liye
-            rowsForExcel.push({});
+            // // Ek khali line gap ke liye
+            // rowsForExcel.push({});
         });
 
         // 2. Sab se niche Grand Total add karein

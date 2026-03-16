@@ -69,13 +69,25 @@ export const handleExportToExcel = async (data, fileName) => {
 
     // --- 3. DATA ROWS WITH ZEBRA STRIPING ---
     data.forEach((item, index) => {
-        const row = worksheet.addRow(Object.values(item));
+        // Step A: Pehle data ko raw number mein convert karein (agar frontend se comma aa raha hai toh)
+        const rowValues = Object.values(item).map(val => {
+            if (typeof val === 'string' && /^-?\d+(,\d+)*(\.\d+)?$/.test(val)) {
+                return Number(val.replace(/,/g, ''));
+            }
+            return val;
+        });
+
+        const row = worksheet.addRow(rowValues);
         row.height = 22;
 
-        // Background color logic: Har doosri row halki grey (F9F9F9)
         const rowFillColor = (index % 2 === 0) ? 'FFFFFF' : 'F2F2F2';
 
         row.eachCell((cell) => {
+            // Step B: Agar cell mein number hai, toh comma lagao (No Decimals)
+            if (typeof cell.value === 'number') {
+                cell.numFmt = '#,##0';
+            }
+
             cell.font = { name: 'Segoe UI', size: 10 };
             cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFillColor } };
