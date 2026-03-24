@@ -21,10 +21,12 @@ const SalesReport = () => {
     // Dropdown States
     const [cities, setCities] = useState([]);
     const [stores, setStores] = useState([]);
+    const [channels, setChannels] = useState([]);
     const [users, setUsers] = useState([]);
     const [categories, setCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
     const [itemsList, setItemsList] = useState([]);
+    
 
     const [filters, setFilters] = useState({
         fromDate: format(new Date(), 'yyyy-MM-dd'),
@@ -34,20 +36,23 @@ const SalesReport = () => {
         ba_id: '',
         cat_id: '',
         subcat_id: '',
-        item_id: ''
+        item_id: '',
+        channel_id: ''
     });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [c, s, u, cat, items] = await Promise.all([
+                const [c, ch, s, u, cat, items] = await Promise.all([
                     API.get('/cities'),
+                    API.get('/channels/getchannels'),
                     API.get('/store?limit=1000'),
                     API.get('/users?limit=1000'),
                     API.get('/category'),
                     API.get('/items?limit=2000')
                 ]);
                 setCities(c.data);
+                setChannels(ch.data);
                 setStores(s.data.stores);
                 const baUsersOnly = u.data.users.filter(user =>
                     user.designation && user.designation.name === "BA"
@@ -96,6 +101,7 @@ const SalesReport = () => {
 
         try {
             const res = await API.get(`/reports/sales-report`, { params: cleanFilters });
+            console.log("sale report ", res.data);
             setReportData(res.data);
         } catch (err) {
             console.error("Report Error:", err);
@@ -123,6 +129,7 @@ const SalesReport = () => {
                 rowsForExcel.push({
                     "Date": transaction.date,
                     "City": transaction.city,
+                    "Channel": transaction.channel,
                     "Store": transaction.store,
                     "BA Name": transaction.baName,
                     "Category": item.cat,
@@ -136,7 +143,7 @@ const SalesReport = () => {
 
             // Transaction ka sub-total line
             rowsForExcel.push({
-                "Date": "", "City": "", "Store": "", "BA Name": "TRANSACTION TOTAL",
+                "Date": "", "Channel": "", "City": "", "Store": "", "BA Name": "TRANSACTION TOTAL",
                 "Category": "", "Sub Category": "", "Product Name": "", "MRP": "",
                 "Quantity": transaction.subTotalQty,
                 "Total Value": transaction.subTotalAmount
@@ -256,6 +263,21 @@ const SalesReport = () => {
                                 {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                             </TextField>
 
+                            {/* City dropdown ke baad yeh add karo */}
+                            <TextField
+                                select
+                                label="Channel"
+                                size="small"
+                                value={filters.channel_id}
+                                onChange={(e) => setFilters({ ...filters, channel_id: e.target.value })}
+                                sx={{ flex: 0.8, minWidth: '100px' }}
+                            >
+                                <MenuItem value="">All</MenuItem>
+                                {channels?.map(ch => (
+                                    <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>
+                                ))}
+                            </TextField>
+
                             {/* Store */}
                             <TextField select label="Store" size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })} sx={{ flex: 1, minWidth: '120px' }}>
                                 <MenuItem value="">All</MenuItem>
@@ -346,7 +368,7 @@ const SalesReport = () => {
                     <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                {["Date", "City", "Store", "BA Name", "Cat", "Sub Cat", "Item", "MRP", "Qty", "Value"].map(h => (
+                                {["Date", "Channel", "City", "Store", "BA Name", "Cat", "Sub Cat", "Item", "MRP", "Qty", "Value"].map(h => (
                                     <TableCell key={h} align="center" sx={{ bgcolor: '#1b2142', color: 'white', fontWeight: 'bold', fontSize: '12px', py: 1 }}>{h}</TableCell>
                                 ))}
                             </TableRow>
@@ -361,6 +383,7 @@ const SalesReport = () => {
                                         {transaction.items.map((item, idx) => (
                                             <TableRow key={`${transaction.saleId}-${idx}`} sx={{ '& td': { fontSize: '11px', borderBottom: '1px solid #f0f0f0' } }}>
                                                 <TableCell align="center">{transaction.date}</TableCell>
+                                                <TableCell align="center">{transaction.channel}</TableCell>
                                                 <TableCell align="center">{transaction.city}</TableCell>
                                                 <TableCell align="center">{transaction.store}</TableCell>
                                                 <TableCell align="center">{transaction.baName}</TableCell>
@@ -374,7 +397,7 @@ const SalesReport = () => {
                                         ))}
                                         {/* SUB-TOTAL ROW FOR THIS TRANSACTION */}
                                         <TableRow sx={{ bgcolor: '#cccbcbff' }}>
-                                            <TableCell colSpan={8} align="right" sx={{ fontWeight: 'bold', fontSize: '11px', color: '#555' }}>
+                                            <TableCell colSpan={9} align="right" sx={{ fontWeight: 'bold', fontSize: '11px', color: '#555' }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                                                     <ReceiptLong fontSize="small" /> Transaction Total :
                                                 </Box>

@@ -11,6 +11,7 @@ import { AuthContext } from '../context/AuthContext';
 
 const Stores = () => {
   const [stores, setStores] = useState([]);
+  const [channels, setChannels] = useState([]); //
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -41,6 +42,7 @@ const Stores = () => {
     city_id: '',
     region_id: '',
     ba_user_id: '',
+    channel_id: '',
     targets: ''
 
   });
@@ -63,10 +65,11 @@ const Stores = () => {
 
     const fetchDropdowns = async () => {
       try {
-        const [c, r, u] = await Promise.all([
+        const [c, r, u, ch] = await Promise.all([
           API.get('/cities'),
           API.get('/regions'),
-          API.get('/users?limit=1000')
+          API.get('/users?limit=1000'),
+          API.get('/channels/getchannels')
         ]);
 
         // Name ke hisab se unique karna (Sab se safest tarika)
@@ -82,6 +85,7 @@ const Stores = () => {
 
         setCities(getUniqueByName(c.data));
         setRegions(getUniqueByName(r.data));
+        setChannels(ch.data || []);
         // Yahan filter update karein: role 'user' ho AUR active ho
         const activeBAs = u.data.users ? u.data.users.filter(user =>
           user.role === 'user' && user.is_active === true
@@ -114,6 +118,7 @@ const Stores = () => {
         region_id: store.region_id || '',
         ba_user_id: store.ba_user_id || '',
         targets: store.targets || '',
+        channel_id: store.channel_id || '',
         is_active: store.is_active
 
 
@@ -205,6 +210,7 @@ const Stores = () => {
                 {/* <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Manager</TableCell> */}
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Target</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>BA Assigned</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Channel</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Is_Active</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1 }}>Actions</TableCell>
               </TableRow>
@@ -218,6 +224,7 @@ const Stores = () => {
                   <TableCell sx={{ fontSize: '0.875rem' }}>{s.city?.name || '-'}</TableCell>
                   <TableCell sx={{ fontSize: '0.875rem' }}>{s.area || '-'}</TableCell> {/* 👈 Area Data */}
                   {/* <TableCell sx={{ fontSize: '0.875rem' }}>{s.store_manager_name || '-'}</TableCell> */}
+
                   <TableCell sx={{ fontSize: '0.875rem' }}>
                     {s.targets ? `Rs. ${parseFloat(s.targets).toLocaleString()}` : '0'}
                   </TableCell>
@@ -228,6 +235,11 @@ const Stores = () => {
                       px: 1, borderRadius: 1, fontWeight: 'bold'
                     }}>
                       {s.beauty_advisor?.name || 'Unassigned'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ fontSize: '0.875rem' }}>
+                    <Typography variant="caption" sx={{ bgcolor: '#f3e5f5', color: '#7b1fa2', px: 1, borderRadius: 1, fontWeight: 'bold' }}>
+                      {s.channel?.name || 'General'}
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.85rem' }}>
@@ -326,6 +338,21 @@ const Stores = () => {
                   onChange={(e) => setFormData({ ...formData, city_id: e.target.value })}
                 >
                   {cities.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                </TextField>
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Channel</Typography>
+                <TextField
+                  select fullWidth size="small"
+                  disabled={mode === 'view'}
+                  value={formData.channel_id}
+                  onChange={(e) => setFormData({ ...formData, channel_id: e.target.value })}
+                >
+                  <MenuItem value=""><em>Select Channel</em></MenuItem>
+                  {channels.map((ch) => (
+                    <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>
+                  ))}
                 </TextField>
               </Box>
 

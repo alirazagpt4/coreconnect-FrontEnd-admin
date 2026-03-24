@@ -21,6 +21,8 @@ const AttendanceReport = () => {
     const [stores, setStores] = useState([]);
     const [users, setUsers] = useState([]);
 
+    const [channels, setChannels] = useState([]);
+
     const [summary, setSummary] = useState({
         total: 0,
         present: 0,
@@ -36,7 +38,8 @@ const AttendanceReport = () => {
         city_id: '',
         store_id: '',
         ba_id: '',
-        status: ''
+        status: '',
+        channel_id: ''
     });
 
     const handleGenerateReport = async () => {
@@ -56,13 +59,15 @@ const AttendanceReport = () => {
     useEffect(() => {
         const fetchFiltersData = async () => {
             try {
-                const [c, s, u] = await Promise.all([
+                const [c, s, u, ch] = await Promise.all([
                     API.get('/cities'),
                     API.get('/store'),
-                    API.get('/users')
+                    API.get('/users'),
+                    API.get('/channels/getchannels')
                 ]);
                 setCities(c.data);
                 setStores(s.data.stores);
+                setChannels(ch.data || []);
                 // JSON ke mutabiq designation.name "BA" hona chahiye
                 const baUsersOnly = u.data.users.filter(user =>
                     user.designation && user.designation.name === "BA"
@@ -106,6 +111,7 @@ const AttendanceReport = () => {
         const formattedData = report.map(row => ({
             "Date": row.date,
             "City": row.city,
+            "Channel": row.channelName || row.channel?.name || 'N/A',
             "Area": row.area || 'N/A',
             "Store Name": row.storeName,
             "BA Name": row.baName,
@@ -211,6 +217,15 @@ const AttendanceReport = () => {
                                 {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                             </TextField>
                         </Box>
+
+                        {/* 👇 New Channel Filter */}
+                        <Box sx={filterBoxStyle}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Channel</Typography>
+                            <TextField select fullWidth size="small" value={filters.channel_id} onChange={(e) => setFilters({ ...filters, channel_id: e.target.value })}>
+                                <MenuItem value="">All Channels</MenuItem>
+                                {channels.map(ch => <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>)}
+                            </TextField>
+                        </Box>
                     </Box>
 
                     {/* ROW 2: Store, BA Name, Status + Generate Button */}
@@ -286,7 +301,7 @@ const AttendanceReport = () => {
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            {["Date", "City", "Area", "Store Name", "BA Name", "Time", "Status", "Picture", "GPS"].map(h => (
+                            {["Date", "City", "Channel", "Area", "Store Name", "BA Name", "Time", "Status", "Picture", "GPS"].map(h => (
                                 <TableCell key={h} align="center" sx={{ bgcolor: '#1b2142', color: 'white', fontWeight: 'bold', py: 1.2, border: '1px solid #2e3558' }}>{h}</TableCell>
                             ))}
                         </TableRow>
@@ -305,6 +320,11 @@ const AttendanceReport = () => {
                                             </TableCell>
                                         )}
                                         <TableCell align="center">{row.city}</TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#7b1fa2' }}>
+                                                {row.channelName || row.channel?.name || '-'}
+                                            </Typography>
+                                        </TableCell>
                                         <TableCell align="center">{row.area || 'N/A'}</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 600 }}>{row.storeName}</TableCell>
                                         <TableCell align="center">{row.baName}</TableCell>

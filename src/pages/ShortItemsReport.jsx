@@ -16,6 +16,7 @@ const ShortItemsReport = () => {
 
     // Dropdown States
     const [cities, setCities] = useState([]);
+    const [channels, setChannels] = useState([]);
     const [stores, setStores] = useState([]);
     const [users, setUsers] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -30,21 +31,24 @@ const ShortItemsReport = () => {
         ba_user_id: '',
         category_id: '',
         subcategory_id: '',
-        item_id: ''
+        item_id: '',
+        channel_id: ''
     });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
                 // limit=1000 add kiya hai taake data poora aaye
-                const [c, s, u, cat, items] = await Promise.all([
+                const [c, ch, s, u, cat, items] = await Promise.all([
                     API.get('/cities'),
+                    API.get('/channels/getchannels'),
                     API.get('/store?limit=1000'),
                     API.get('/users?limit=1000'),
                     API.get('/category'),
                     API.get('/items?limit=1000')
                 ]);
                 setCities(c.data);
+                setChannels(ch.data);
                 setStores(s.data.stores || []);
                 const baUsersOnly = u.data.users.filter(user =>
                     user.designation && user.designation.name === "BA"
@@ -107,6 +111,7 @@ const ShortItemsReport = () => {
         // Data ko Excel format ke liye flat karna
         const rowsForExcel = reportData.map((row) => ({
             "Date": formatDateDisplay(row.date),
+            "Channel": row.channelName,
             "City": row.cityName,
             "Store": row.storeName,
             "Area": row.areaName || row.area || 'N/A',
@@ -152,6 +157,20 @@ const ShortItemsReport = () => {
                         <TextField select label="City" size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value, store_id: '' })} sx={{ flex: 0.8, minWidth: '100px' }}>
                             <MenuItem value="">All</MenuItem>
                             {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                        </TextField>
+
+                        <TextField
+                            select
+                            label="Channel"
+                            size="small"
+                            value={filters.channel_id}
+                            onChange={(e) => setFilters({ ...filters, channel_id: e.target.value })}
+                            sx={{ flex: 0.8, minWidth: '100px' }}
+                        >
+                            <MenuItem value="">All</MenuItem>
+                            {channels?.map(ch => (
+                                <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>
+                            ))}
                         </TextField>
 
                         <TextField select label="Store" size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })} sx={{ flex: 1, minWidth: '120px' }}>
@@ -230,7 +249,7 @@ const ShortItemsReport = () => {
                     <TableHead>
                         <TableRow>
                             {/* "Area" column add kar di gayi hai */}
-                            {["Date", "City", "Store", "Area", "BA Name", "Category", "Sub Category", "Item Name"].map(h => (
+                            {["Date", "Channel", "City", "Store", "Area", "BA Name", "Category", "Sub Category", "Item Name"].map(h => (
                                 <TableCell key={h} align="center" sx={{ bgcolor: '#1b2142', color: 'white', fontWeight: 'bold', fontSize: '12px', py: 1 }}>{h}</TableCell>
                             ))}
                         </TableRow>
@@ -242,6 +261,7 @@ const ShortItemsReport = () => {
                             reportData.map((row, idx) => (
                                 <TableRow key={idx} hover sx={{ '& td': { fontSize: '11px', borderBottom: '1px solid #f0f0f0' } }}>
                                     <TableCell align="center">{formatDateDisplay(row.date)}</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 'bold', color: '#555' }}>{row.channelName || 'N/A'}</TableCell>
                                     <TableCell align="center">{row.cityName}</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 500 }}>{row.storeName}</TableCell>
                                     <TableCell align="center" sx={{ color: '#666' }}>{row.areaName || row.area || 'N/A'}</TableCell>

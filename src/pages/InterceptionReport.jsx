@@ -23,6 +23,7 @@ const InterceptionReport = () => {
 
     // Dropdown States
     const [cities, setCities] = useState([]);
+    const [channels, setChannels] = useState([]);
     const [stores, setStores] = useState([]);
     const [users, setUsers] = useState([]);
 
@@ -31,18 +32,21 @@ const InterceptionReport = () => {
         toDate: format(new Date(), 'yyyy-MM-dd'),
         city_id: '',
         store_id: '',
-        ba_user_id: ''
+        ba_user_id: '',
+        channel_id: ''
     });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [c, s, u] = await Promise.all([
+                const [c, ch, s, u] = await Promise.all([
                     API.get('/cities'),
+                    API.get('/channels/getchannels'),
                     API.get('/store?limit=1000'),
                     API.get('/users?limit=1000')
                 ]);
                 setCities(c.data);
+                setChannels(ch.data);
                 setStores(s.data.stores || []);
                 const baUsersOnly = u.data.users.filter(user =>
                     user.designation && user.designation.name === "BA"
@@ -82,6 +86,7 @@ const InterceptionReport = () => {
         // Interception Report ke columns ki mapping
         const formattedData = reportData.map(row => ({
             "Date": row.report_date ? format(parseISO(row.report_date), 'dd MMM yyyy') : 'N/A',
+            "Channel": row.store?.channel?.name || 'N/A',
             "City": row.store?.city?.name || 'N/A',
             "Store Name": row.store?.store_name || 'N/A',
             "BA Name": row.beauty_advisor?.name || row.baName || 'N/A',
@@ -172,6 +177,15 @@ const InterceptionReport = () => {
                                 slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiInputBase-input': { py: 0.8 } } } }}
                             />
                         </Box>
+
+                        <Box sx={filterBoxStyle}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Channel</Typography>
+                            <TextField select fullWidth size="small" value={filters.channel_id} onChange={(e) => setFilters({ ...filters, channel_id: e.target.value, store_id: '' })}>
+                                <MenuItem value="">All Channels</MenuItem>
+                                {channels.map(ch => <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>)}
+                            </TextField>
+                        </Box>
+
                         <Box sx={filterBoxStyle}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>City</Typography>
                             <TextField select fullWidth size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value, store_id: '' })}>
@@ -179,6 +193,8 @@ const InterceptionReport = () => {
                                 {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                             </TextField>
                         </Box>
+
+
                     </Box>
 
                     {/* ROW 2 */}
@@ -246,7 +262,7 @@ const InterceptionReport = () => {
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            {["Date", "City", "Store Name", "BA Name", "Intercepted", "Converted", "Ratio (%)"].map(h => (
+                            {["Date", "Channel", "City", "Store Name", "BA Name", "Intercepted", "Converted", "Ratio (%)"].map(h => (
                                 <TableCell key={h} align="center" sx={{ bgcolor: '#1b2142', color: 'white', fontWeight: 'bold', fontSize: '12px', py: 1.5 }}>
                                     {h}
                                 </TableCell>
@@ -263,6 +279,7 @@ const InterceptionReport = () => {
                                     <TableCell align="center">
                                         {row.report_date ? format(parseISO(row.report_date), 'dd MMM yyyy') : 'N/A'}
                                     </TableCell>
+                                    <TableCell align="center">{row.store?.channel?.name || 'N/A'}</TableCell>
                                     <TableCell align="center">{row.store?.city?.name || 'N/A'}</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 500 }}>{row.store?.store_name}</TableCell>
                                     <TableCell align="center">{row.beauty_advisor?.name || row.baName}</TableCell>

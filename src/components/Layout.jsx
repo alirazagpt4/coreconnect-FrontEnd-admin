@@ -1,3 +1,4 @@
+import React from 'react'
 import { Box, CssBaseline } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
@@ -5,42 +6,35 @@ import Sidebar from './Sidebar';
 import Footer from './Footer';
 
 const Layout = () => {
+  const [open, setOpen] = React.useState(true); // Sidebar state
+
+  const toggleDrawer = () => setOpen(!open);
+
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f8f9fa' }}>
       <CssBaseline />
-      
-      {/* 1. Sidebar: Full Height Pillar */}
-      <Sidebar />
 
-      {/* 2. Content Wrapper: Is mein Header aur Scrollable Body hogi */}
-      <Box sx={{ 
-        flexGrow: 1, 
-        display: 'flex', 
+      {/* Sidebar ko open state pass karein */}
+      <Sidebar open={open} />
+
+      <Box sx={{
+        flexGrow: 1,
+        display: 'flex',
         flexDirection: 'column',
-        height: '100vh',
-        width: `calc(100% - 220px)` 
+        width: '100%',
+        transition: 'margin 0.3s ease', // Smooth transition
       }}>
-        
-        <Header />
+        {/* Header mein toggle function pass karein */}
+        <Header toggleDrawer={toggleDrawer} open={open} />
 
-        {/* 3. Scrollable Container: Is mein Content + Footer dono honge */}
-        <Box sx={{ 
-          flexGrow: 1, 
-          overflowY: 'auto', // Sirf ye area scroll hoga
-          bgcolor: '#f8f9fa',
-          mt: '54px', // Header ki height
-          display: 'flex',
-          flexDirection: 'column'
+        <Box component="main" sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          mt: '64px', // Standard Header height
+          p: 3
         }}>
-          
-          {/* Main Page Content (Users, Stores, etc.) */}
-          <Box sx={{ p: 3, flexGrow: 1 }}>
-            <Outlet />
-          </Box>
-
-          {/* Footer: Ab ye Outlet ke nichay ayega aur scroll bhi saath hoga */}
+          <Outlet />
           <Footer />
-          
         </Box>
       </Box>
     </Box>

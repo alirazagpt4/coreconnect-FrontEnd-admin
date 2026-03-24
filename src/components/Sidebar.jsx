@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon,
-  ListItemText, Toolbar, Box, Collapse, Divider, Typography
+  ListItemText, Toolbar, Box, Collapse, Divider, Tooltip
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -16,125 +16,109 @@ import {
 
 import { AuthContext } from '../context/AuthContext';
 
-const drawerWidth = 240;
-
-const Sidebar = () => {
+const Sidebar = ({ open, toggleDrawer }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // user object from context 
   const { user } = useContext(AuthContext);
   const userRole = user?.role;
-  console.log("user role in side baar .. ", userRole);
 
+  const [openReports, setOpenReports] = useState(false);
 
-  // Reports menu state
-  const [openReports, setOpenReports] = useState(true); // Default open rakh raha hoon taake nazar aaye
-
-  const handleReportsClick = () => {
-    setOpenReports(!openReports);
-  };
-
-  // Helper function for active styles
   const isActive = (path) => location.pathname === path;
+
+  // Reusable Nav Item Component taake code saaf rahay
+  const NavItem = ({ icon, label, path, onClick }) => (
+    <Tooltip title={!open ? label : ""} placement="right">
+      <ListItem disablePadding sx={{ display: 'block', mb: 0.5 }}>
+        <ListItemButton
+          onClick={onClick || (() => navigate(path))}
+          selected={isActive(path)}
+          sx={{
+            minHeight: 48,
+            justifyContent: open ? 'initial' : 'center',
+            px: 2.5,
+            borderRadius: open ? 2 : 0,
+            mx: open ? 1 : 0,
+            '&.Mui-selected': {
+              bgcolor: '#e8eaf6',
+              borderRight: open ? 'none' : '4px solid #ab1d47',
+              '& .MuiListItemIcon-root': { color: '#ab1d47' }
+            },
+          }}
+        >
+          <ListItemIcon sx={{
+            minWidth: 0,
+            mr: open ? 2 : 'auto',
+            justifyContent: 'center',
+            color: isActive(path) ? '#ab1d47' : '#1b2142'
+          }}>
+            {icon}
+          </ListItemIcon>
+          {open && <ListItemText primary={label} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isActive(path) ? 600 : 400 }} />}
+        </ListItemButton>
+      </ListItem>
+    </Tooltip>
+  );
 
   return (
     <Drawer
       variant="permanent"
       sx={{
-        width: drawerWidth,
+        width: open ? 240 : 70,
+        flexShrink: 0,
+        whiteSpace: 'nowrap',
+        boxSizing: 'border-box',
         [`& .MuiDrawer-paper`]: {
-          flexShrink: 0,
-          width: drawerWidth,
-          boxSizing: 'border-box',
+          width: open ? 240 : 70,
+          transition: (theme) => theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+          overflowX: 'hidden',
           bgcolor: '#f4f4f4',
+          borderRight: '1px solid #ddd',
           display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          overflow: 'hidden', // Drawer khud scroll nahi hoga
-          borderRight: '1px solid #ddd'
+          flexDirection: 'column'
         },
       }}
     >
       <Toolbar />
 
-      {/* --- SECTION 1: SCROLLABLE MENU (80%) --- */}
-      <Box sx={{
-        flexGrow: 1,
-        overflowY: 'auto',
-        mt: 1,
-        px: 1,
-        '&::-webkit-scrollbar': { width: '4px' },
-        '&::-webkit-scrollbar-thumb': { bgcolor: '#ccc', borderRadius: '10px' }
-      }}>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', mt: 2 }}>
         <List>
-          {/* Dashboard */}
-          <ListItem disablePadding sx={{ mb: 0.5 }}>
-            <ListItemButton
-              onClick={() => navigate('/dashboard')}
-              selected={isActive('/dashboard')}
-              sx={{ borderRadius: 2 }}
-            >
-              <ListItemIcon sx={{ color: '#1b2142' }}><DashboardIcon /></ListItemIcon>
-              <ListItemText primary="Dashboard" />
-            </ListItemButton>
-          </ListItem>
+          {/* 1. Dashboard */}
+          <NavItem icon={<DashboardIcon />} label="Dashboard" path="/dashboard" />
 
-
-
-          {/* Users */}
+          {/* 2. Users (Role Protected) */}
           {(userRole === 'admin' || userRole === 'ccadmin') && (
-            <ListItem disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                onClick={() => navigate('/users')}
-                selected={isActive('/users')}
-                sx={{ borderRadius: 2 }}
-              >
-                <ListItemIcon sx={{ color: '#1b2142' }}><PeopleIcon /></ListItemIcon>
-                <ListItemText primary="Users" />
-              </ListItemButton>
-            </ListItem>
+            <NavItem icon={<PeopleIcon />} label="Users" path="/users" />
           )}
 
+          {/* 3. Stores */}
+          <NavItem icon={<StoreIcon />} label="Stores" path="/stores" />
 
+          {/* 4. Items */}
+          <NavItem icon={<InventoryIcon />} label="Items" path="/items" />
 
-          {/* Stores */}
-          <ListItem disablePadding sx={{ mb: 0.5 }}>
+          {/* 5. Reports (Nested) */}
+          <ListItem disablePadding sx={{ display: 'block', mb: 0.5 }}>
             <ListItemButton
-              onClick={() => navigate('/stores')}
-              selected={isActive('/stores')}
-              sx={{ borderRadius: 2 }}
+              onClick={() => {
+                if (!open) { toggleDrawer(); setOpenReports(true); }
+                else { setOpenReports(!openReports); }
+              }}
+              sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5, mx: open ? 1 : 0 }}
             >
-              <ListItemIcon sx={{ color: '#1b2142' }}><StoreIcon /></ListItemIcon>
-              <ListItemText primary="Stores" />
-            </ListItemButton>
-          </ListItem>
-
-          {/* Items */}
-          <ListItem disablePadding sx={{ mb: 0.5 }}>
-            <ListItemButton
-              onClick={() => navigate('/items')}
-              selected={isActive('/items')}
-              sx={{ borderRadius: 2 }}
-            >
-              <ListItemIcon sx={{ color: '#1b2142' }}><InventoryIcon /></ListItemIcon>
-              <ListItemText primary="Items" />
-            </ListItemButton>
-          </ListItem>
-
-          {/* --- NESTED REPORTS MENU --- */}
-          <ListItem disablePadding sx={{ mb: 0.5 }}>
-            <ListItemButton onClick={handleReportsClick} sx={{ borderRadius: 2 }}>
-              <ListItemIcon sx={{ color: '#1b2142' }}>
+              <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 'auto', justifyContent: 'center', color: '#1b2142' }}>
                 <BarChartIcon />
               </ListItemIcon>
-              <ListItemText primary="Reports" sx={{ fontWeight: 'bold' }} />
-              {openReports ? <ExpandLess /> : <ExpandMore />}
+              {open && <ListItemText primary="Reports" sx={{ fontWeight: 'bold' }} />}
+              {open && (openReports ? <ExpandLess /> : <ExpandMore />)}
             </ListItemButton>
           </ListItem>
 
-          <Collapse in={openReports} timeout="auto" unmountOnExit>
+          <Collapse in={openReports && open} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-
               {[
                 { name: 'Attendance Report', path: '/attendance-report' },
                 { name: 'Daily Sales Report', path: '/sales-report' },
@@ -151,23 +135,13 @@ const Sidebar = () => {
                     my: 0.2,
                     mx: 1,
                     borderRadius: '8px',
-                    '&.Mui-selected': {
-                      borderRight: '4px solid #ab1d47',
-                      bgcolor: '#e8eaf6'
-                    },
+                    '&.Mui-selected': { borderRight: '4px solid #ab1d47', bgcolor: '#e8eaf6' },
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 35 }}>
                     <AssessmentIcon fontSize="small" sx={{ color: isActive(report.path) ? '#ab1d47' : '#555' }} />
                   </ListItemIcon>
-                  <ListItemText
-                    primary={report.name}
-                    primaryTypographyProps={{
-                      fontSize: '0.85rem',
-                      fontWeight: isActive(report.path) ? 'bold' : 'normal',
-                      color: isActive(report.path) ? '#ab1d47' : '#333'
-                    }}
-                  />
+                  {open && <ListItemText primary={report.name} primaryTypographyProps={{ fontSize: '0.8rem' }} />}
                 </ListItemButton>
               ))}
             </List>
@@ -175,28 +149,15 @@ const Sidebar = () => {
         </List>
       </Box>
 
-
-
-      {/* --- SECTION 2: FIXED FOOTER --- */}
-      <Box sx={{
-
-        mt: 'auto',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        py: 2.5, // Upar niche thori jagah
-        px: 1,   // Left side se thora andar (Is se professional lagega)
-      }}>
+      {/* Logo Section - Bottom */}
+      <Box sx={{ p: 2, mt: 'auto', textAlign: 'left' }}>
         <img
           src="/rivaj.png"
-          alt="Rivaj Logo"
+          alt="Logo"
           style={{
-            height: '40px',      // Height bohot zyada bari bhi ajeeb lagti hai
-            width: 'auto',
-            objectFit: 'contain',
-            filter: 'contrast(1.1)', // Logo ko thora sharp karne ke liye
-            display: 'block'
+            width: open ? '60%' : '50px',
+            transition: '0.3s',
+            filter: 'contrast(1.1)'
           }}
         />
       </Box>
