@@ -122,7 +122,7 @@ const Sidebar = ({ open, toggleDrawer }) => {
               {[
                 { name: 'Attendance Report', path: '/attendance-report' },
                 { name: 'Daily Sales Report', path: '/sales-report' },
-                { name: 'Summary Sales Report', path: '/summary-report' },
+                { name: 'Sale Summary Report', path: '/summary-report' },
                 { name: 'Short Items Report', path: '/short-items-report' },
                 { name: 'Interception Reports', path: '/interception-report' }
               ].map((report) => (

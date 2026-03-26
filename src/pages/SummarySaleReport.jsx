@@ -6,240 +6,184 @@ import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Button, CircularProgress, MenuItem
 } from '@mui/material';
-import { Summarize, FilterAlt, FileDownload } from '@mui/icons-material';
+import { Summarize, Search, FileDownload } from '@mui/icons-material';
 import API from '../api/API';
 import { handleExportToExcel } from '../utils/exportUtils';
 
 const SummaryReport = () => {
-    const [report, setReport] = useState([]);
+    const [reportData, setReportData] = useState([]);
+    const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(false);
-
-    // Dropdown States
     const [cities, setCities] = useState([]);
     const [stores, setStores] = useState([]);
     const [users, setUsers] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [subCategories, setSubCategories] = useState([]);
 
     const [filters, setFilters] = useState({
         fromDate: format(new Date(), 'yyyy-MM-dd'),
         toDate: format(new Date(), 'yyyy-MM-dd'),
-        city_id: '',
-        store_id: '',
-        ba_id: '',
-        cat_id: '',
-        subcat_id: ''
+        city_id: '', store_id: '', ba_id: ''
     });
+
+    const brands = ["AMRIJ", "EVERNOYA", "NO!MO!", "RHD", "RIVAJ"];
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [c, s, u, cat] = await Promise.all([
+                const [c, s, u] = await Promise.all([
                     API.get('/cities'),
                     API.get('/store?limit=1000'),
-                    API.get('/users?limit=1000'),
-                    API.get('/category')
+                    API.get('/users?limit=1000')
                 ]);
                 setCities(c.data);
-                setStores(s.data.stores);
-                const baUsersOnly = u.data.users.filter(user =>
-                    user.designation && user.designation.name === "BA"
-                );
-
-                setUsers(baUsersOnly);
-                setCategories(cat.data);
-            } catch (err) { console.error("Fetch Error:", err); }
+                setStores(s.data.stores || []);
+                setUsers(u.data.users.filter(user => user.designation?.name === "BA"));
+            } catch (err) { console.error("Initial Fetch Error", err); }
         };
         fetchInitialData();
     }, []);
 
-    // FIXED: Category change hone par sub-category reset aur load karne ka logic
-    useEffect(() => {
-        if (filters.cat_id) {
-            API.get(`/subCategory/${filters.cat_id}`).then(res => setSubCategories(res.data));
-        } else {
-            setSubCategories([]);
-        }
-        // Jab Category "All" ho ya badle, toh sub-category reset karein
-        setFilters(prev => ({ ...prev, subcat_id: '' }));
-    }, [filters.cat_id]);
-
     const handleGenerateReport = async () => {
         setLoading(true);
-
-        // FIXED: Empty filters ko remove karein taake "All" select karne par query sahi jaye
         const cleanFilters = Object.fromEntries(
-            Object.entries(filters).filter(([_, value]) => value !== "" && value !== null)
+            Object.entries(filters).filter(([_, v]) => v !== "" && v !== null)
         );
-
         try {
-            const res = await API.get(`/reports/sales-report`, { params: cleanFilters });
-            const rawData = res.data.data || [];
-
-            const summaryRows = [];
-            rawData.forEach(sale => {
-                sale.items.forEach(item => {
-                    summaryRows.push({
-                        date: sale.date,
-                        city: sale.city,
-                        storeName: sale.store,
-                        baName: sale.baName,
-                        cat: item.cat,
-                        subCat: item.subCat,
-                        totalQty: item.qty,
-                        totalValue: item.value
-                    });
-                });
-            });
-
-            setReport(summaryRows);
-        } catch (err) {
-            console.error(err);
-            alert("Data fetch nahi ho saka!");
-        } finally { setLoading(false); }
+            const res = await API.get(`/reports/sales-summary-report`, { params: cleanFilters });
+            setReportData(res.data.data || []);
+            setSummary(res.data.summary || null);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
-    const dateBoxStyle = { width: '180px' };
+    const handleExcelExport = () => {
+        const excelData = reportData.map(row => {
+            const flatRow = {
+                'Date': format(parseISO(row.date), 'dd-MM-yyyy'),
+                'City': row.city,
+                'Channel': row.channel,
+                'Store': row.storeName,
+                'BA Name': row.baName,
+            };
+            brands.forEach(brand => {
+                flatRow[`${brand} Qty`] = Math.round(row.brands[brand]?.qty || 0);
+                flatRow[`${brand} Val`] = Math.round(row.brands[brand]?.val || 0);
+            });
 
-    const downloadExcel = () => {
-        if (!report || report.length === 0) {
-            alert("Pehle report generate karein!");
-            return;
-        }
+            flatRow['Grand Total Qty'] = Math.round(row.rowTotalQty || 0);
+            flatRow['Grand Total Val'] = Math.round(row.rowTotalVal || 0);
+            return flatRow;
+        });
+        handleExportToExcel(excelData, `Sales_Summary_${filters.fromDate}`);
+    };
 
-        // Data ko Excel format ke liye map karna
-        const rowsForExcel = report.map((row) => ({
-            "Date": row.date,
-            "City": row.city,
-            "Store Name": row.storeName,
-            "BA Name": row.baName,
-            "Category": row.cat,
-            "Sub Category": row.subCat,
-            "Total Qty": row.totalQty,
-            "Total Value": Math.round(row.totalValue)
-        }));
-
-        handleExportToExcel(rowsForExcel, "Summary_Sales_Report");
+    const filterFieldStyle = {
+        '& .MuiInputBase-root': { height: '32px', fontSize: '12px' },
+        '& .MuiInputLabel-root': { fontSize: '11px', transform: 'translate(10px, 8px) scale(1)' },
+        '& .MuiInputLabel-shrink': { transform: 'translate(10px, -8px) scale(0.75)' },
+        flex: 1, minWidth: '140px'
     };
 
     return (
-        <Box sx={{ p: 1.5, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                <Summarize sx={{ mr: 1, color: '#ab1d47' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>Summary Sales Report</Typography>
-            </Box>
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f1f3f4' }}>
 
-            <Paper sx={{ p: 2, mb: 1.5, borderRadius: 2 }}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5, alignItems: 'flex-end' }}>
-                        <Box sx={dateBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 0.5, display: 'block' }}>From</Typography>
-                            <DatePicker
-                                value={parseISO(filters.fromDate)}
-                                onChange={(v) => setFilters({ ...filters, fromDate: format(v, 'yyyy-MM-dd') })}
-                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
-                            />
+            {/* Header / Summary Info */}
+            <Paper elevation={1} sx={{ p: 1, px: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 0, bgcolor: '#fff' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Summarize sx={{ color: '#ab1d47', fontSize: 20 }} />
+                    <Typography sx={{ fontWeight: 800, fontSize: '14px' }}>SALES SUMMARY REPORT</Typography>
+                </Box>
+                {summary && (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box sx={{ bgcolor: '#1b2142', color: 'white', px: 1.5, py: 0.2, borderRadius: 1 }}>
+                            <Typography sx={{ fontSize: '11px' }}>
+                                Qty: <b>{Math.round(summary.grandTotalQty)}</b> |
+                                Val: <b>{Math.round(summary.grandTotalVal).toLocaleString()}</b>
+                            </Typography>
                         </Box>
-                        <Box sx={dateBoxStyle}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 0.5, display: 'block' }}>To</Typography>
-                            <DatePicker
-                                value={parseISO(filters.toDate)}
-                                onChange={(v) => setFilters({ ...filters, toDate: format(v, 'yyyy-MM-dd') })}
-                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
-                            />
-                        </Box>
-
-                        <TextField select label="City" size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value })} sx={{ flex: 0.8 }}>
-                            <MenuItem value="">All</MenuItem>
-                            {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-                        </TextField>
-
-                        <TextField select label="Store" size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })} sx={{ flex: 1.2 }}>
-                            <MenuItem value="">All</MenuItem>
-                            {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
-                        </TextField>
                     </Box>
-
-                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                        <TextField select label="BA Name" size="small" value={filters.ba_id} onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })} sx={{ flex: 1 }}>
-                            <MenuItem value="">All</MenuItem>
-                            {users.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
-                        </TextField>
-
-                        <TextField select label="Category" size="small" value={filters.cat_id} onChange={(e) => setFilters({ ...filters, cat_id: e.target.value })} sx={{ flex: 1 }}>
-                            <MenuItem value="">All</MenuItem>
-                            {categories.map(c => <MenuItem key={c.id} value={c.id}>{c.category_name}</MenuItem>)}
-                        </TextField>
-
-                        <TextField select label="Sub-Category" size="small" value={filters.subcat_id} onChange={(e) => setFilters({ ...filters, subcat_id: e.target.value })} disabled={!filters.cat_id} sx={{ flex: 1 }}>
-                            <MenuItem value="">All</MenuItem>
-                            {subCategories.map(sc => <MenuItem key={sc.id} value={sc.id}>{sc.subcategory_name}</MenuItem>)}
-                        </TextField>
-
-                        <Button
-                            variant="contained"
-                            onClick={handleGenerateReport}
-                            sx={{
-                                bgcolor: '#ab1d47',
-                                minWidth: '150px',
-                                height: '40px',
-                                fontWeight: 'bold',
-                                '&:hover': { bgcolor: '#8e183a' }
-                            }}
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <FilterAlt />}
-                        >
-                            {loading ? "FETCHING..." : "GENERATE"}
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            onClick={downloadExcel}
-                            disabled={loading || report.length === 0}
-                            startIcon={<FileDownload />}
-                            sx={{
-                                height: '40px',
-                                fontWeight: 'bold',
-                                bgcolor: '#2e7d32',
-                                '&:hover': { bgcolor: '#1b5e20' }
-                            }}
-                        >
-                            EXPORT
-                        </Button>
-                    </Box>
-                </LocalizationProvider>
+                )}
             </Paper>
 
-            <TableContainer component={Paper} sx={{ borderRadius: 2, maxHeight: 'calc(100vh - 250px)' }}>
-                <Table stickyHeader size="small">
-                    <TableHead>
-                        <TableRow>
-                            {["Date", "City", "Store Name", "BA Name", "Category", "Sub Category", "Total Qty", "Value"].map((h) => (
-                                <TableCell key={h} align="center" sx={{ bgcolor: '#1b2142', color: 'white', fontWeight: 'bold', fontSize: '12px', py: 1.5 }}>{h}</TableCell>
+            {/* Compact Filters - All Here Now */}
+            <Paper variant="outlined" sx={{ m: 1, p: 1, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', borderRadius: '4px' }}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker label="From" value={parseISO(filters.fromDate)} onChange={(v) => setFilters({ ...filters, fromDate: format(v, 'yyyy-MM-dd') })} slotProps={{ textField: { size: 'small', sx: filterFieldStyle } }} />
+                    <DatePicker label="To" value={parseISO(filters.toDate)} onChange={(v) => setFilters({ ...filters, toDate: format(v, 'yyyy-MM-dd') })} slotProps={{ textField: { size: 'small', sx: filterFieldStyle } }} />
+                </LocalizationProvider>
+
+                <TextField select label="City" size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value })} sx={filterFieldStyle}>
+                    <MenuItem value="">All Cities</MenuItem>
+                    {cities.map(c => <MenuItem key={c.id} value={c.id} sx={{ fontSize: '12px' }}>{c.name}</MenuItem>)}
+                </TextField>
+
+                <TextField select label="Store" size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })} sx={filterFieldStyle}>
+                    <MenuItem value="">All Stores</MenuItem>
+                    {stores.map(s => <MenuItem key={s.id} value={s.id} sx={{ fontSize: '12px' }}>{s.store_name}</MenuItem>)}
+                </TextField>
+
+                <TextField select label="BA" size="small" value={filters.ba_id} onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })} sx={filterFieldStyle}>
+                    <MenuItem value="">All BAs</MenuItem>
+                    {users.map(u => <MenuItem key={u.id} value={u.id} sx={{ fontSize: '12px' }}>{u.fullname || u.name}</MenuItem>)}
+                </TextField>
+
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Button variant="contained" onClick={handleGenerateReport} size="small" sx={{ bgcolor: '#1b2142', height: '32px' }}>
+                        <Search sx={{ fontSize: 16, mr: 0.5 }} /> FETCH
+                    </Button>
+                    <Button variant="contained" color="success" onClick={handleExcelExport} size="small" sx={{ height: '32px' }}>
+                        <FileDownload sx={{ fontSize: 16, mr: 0.5 }} /> EXCEL
+                    </Button>
+                </Box>
+            </Paper>
+
+            {/* Table Area */}
+            <Box sx={{ flexGrow: 1, px: 1, pb: 1, overflow: 'hidden' }}>
+                <TableContainer component={Paper} sx={{ height: '100%', overflow: 'auto', borderRadius: '4px' }}>
+                    <Table stickyHeader size="small">
+                        <TableHead>
+                            <TableRow sx={{ '& th': { bgcolor: '#1b2142', color: 'white', fontWeight: 800, fontSize: '10px', py: 0.5, borderRight: '1px solid #333' } }}>
+                                <TableCell colSpan={5} align="center">BASIC INFO</TableCell>
+                                {brands.map(b => <TableCell key={b} colSpan={2} align="center">{b}</TableCell>)}
+                                <TableCell colSpan={2} align="center" sx={{ bgcolor: '#004d40' }}>TOTAL</TableCell>
+                            </TableRow>
+                            <TableRow sx={{ '& th': { bgcolor: '#f8f9fa', fontSize: '9px', fontWeight: 'bold', p: '4px' } }}>
+                                {["Date", "City", "CH", "Store", "BA"].map(h => <TableCell key={h}>{h}</TableCell>)}
+                                {[...brands, "OVERALL"].map((_, i) => (
+                                    <React.Fragment key={i}>
+                                        <TableCell align="center" sx={{ borderLeft: '1px solid #eee' }}>Q</TableCell>
+                                        <TableCell align="center">V</TableCell>
+                                    </React.Fragment>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow><TableCell colSpan={20} align="center" sx={{ py: 10 }}><CircularProgress size={25} /></TableCell></TableRow>
+                            ) : reportData.map((row, idx) => (
+                                <TableRow key={idx} hover sx={{ '& td': { fontSize: '10.5px', p: '4px 8px', borderRight: '1px solid #f1f1f1', whiteSpace: 'nowrap' } }}>
+                                    <TableCell>{format(parseISO(row.date), 'dd/MM')}</TableCell>
+                                    <TableCell>{row.city}</TableCell>
+                                    <TableCell>{row.channel}</TableCell>
+                                    <TableCell sx={{ fontWeight: 600 }}>{row.storeName}</TableCell>
+                                    <TableCell>{row.baName}</TableCell>
+                                    {brands.map(b => (
+                                        <React.Fragment key={b}>
+                                            <TableCell align="center">{Math.round(row.brands[b]?.qty || 0)}</TableCell>
+                                            <TableCell align="right">{Math.round(row.brands[b]?.val || 0).toLocaleString()}</TableCell>
+                                        </React.Fragment>
+                                    ))}
+                                    {/* Grand Totals at the end of the row */}
+                                    <TableCell align="center" sx={{ bgcolor: '#f1f8f7', fontWeight: 'bold' }}>
+                                        {Math.round(row.rowTotalQty)}
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ bgcolor: '#f1f8f7', fontWeight: 'bold' }}>
+                                        {Math.round(row.rowTotalVal).toLocaleString()}
+                                    </TableCell>                                </TableRow>
                             ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {loading ? (
-                            <TableRow><TableCell colSpan={8} align="center" sx={{ py: 10 }}><CircularProgress color="secondary" /></TableCell></TableRow>
-                        ) : report.length > 0 ? (
-                            report.map((row, index) => (
-                                <TableRow key={index} hover sx={{ '& td': { fontSize: '11px', borderBottom: '1px solid #f0f0f0' } }}>
-                                    <TableCell align="center">{row.date}</TableCell>
-                                    <TableCell align="center">{row.city}</TableCell>
-                                    <TableCell align="center">{row.storeName}</TableCell>
-                                    <TableCell align="center">{row.baName}</TableCell>
-                                    <TableCell align="center">{row.cat}</TableCell>
-                                    <TableCell align="center">{row.subCat}</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 'bold', color: '#ab1d47', bgcolor: '#fff5f7' }}>{row.totalQty}</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>{Math.round(row.totalValue).toLocaleString()}</TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow><TableCell colSpan={8} align="center" sx={{ py: 5, color: '#999' }}>No data found.</TableCell></TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
         </Box>
     );
 };
