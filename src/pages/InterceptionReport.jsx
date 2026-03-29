@@ -204,7 +204,7 @@ const InterceptionReport = () => {
                             <TextField select fullWidth size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })}>
                                 <MenuItem value="">All Stores</MenuItem>
                                 {stores.filter(s => !filters.city_id || String(s.city_id) === String(filters.city_id)).map(s => (
-                                    <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>
+                                    <MenuItem key={s.id} value={s.id}>{s.store_name} {s.area ? `(${s.area})` : ''}</MenuItem>
                                 ))}
                             </TextField>
                         </Box>

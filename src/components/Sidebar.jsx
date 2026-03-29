@@ -124,7 +124,10 @@ const Sidebar = ({ open, toggleDrawer }) => {
                 { name: 'Daily Sales Report', path: '/sales-report' },
                 { name: 'Sale Summary Report', path: '/summary-report' },
                 { name: 'Short Items Report', path: '/short-items-report' },
-                { name: 'Interception Reports', path: '/interception-report' }
+                { name: 'Interception Report', path: '/interception-report' },
+                { name: 'Short Tester Report', path: '/shorttester-report' },
+                { name: 'Expiry Stock Report', path: '/expirystock-report' },
+
               ].map((report) => (
                 <ListItemButton
                   key={report.path}

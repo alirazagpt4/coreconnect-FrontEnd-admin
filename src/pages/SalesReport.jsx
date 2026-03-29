@@ -26,7 +26,7 @@ const SalesReport = () => {
     const [categories, setCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
     const [itemsList, setItemsList] = useState([]);
-    
+
 
     const [filters, setFilters] = useState({
         fromDate: format(new Date(), 'yyyy-MM-dd'),
@@ -281,7 +281,7 @@ const SalesReport = () => {
                             {/* Store */}
                             <TextField select label="Store" size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })} sx={{ flex: 1, minWidth: '120px' }}>
                                 <MenuItem value="">All</MenuItem>
-                                {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
+                                {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}  {s.area ? `(${s.area})` : ''}</MenuItem>)}
                             </TextField>
 
                             {/* BA Name */}

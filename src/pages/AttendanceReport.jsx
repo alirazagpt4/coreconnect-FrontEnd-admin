@@ -61,8 +61,8 @@ const AttendanceReport = () => {
             try {
                 const [c, s, u, ch] = await Promise.all([
                     API.get('/cities'),
-                    API.get('/store'),
-                    API.get('/users'),
+                    API.get('/store?limit=1000'),
+                    API.get('/users?limit=1000'),
                     API.get('/channels/getchannels')
                 ]);
                 setCities(c.data);
@@ -234,7 +234,7 @@ const AttendanceReport = () => {
                             <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Store</Typography>
                             <TextField select fullWidth size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })}>
                                 <MenuItem value="">All Stores</MenuItem>
-                                {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
+                                {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}  {s.area ? `(${s.area})` : ''}</MenuItem>)}
                             </TextField>
                         </Box>
                         <Box sx={filterBoxStyle}>
