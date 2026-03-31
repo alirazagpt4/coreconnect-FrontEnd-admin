@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    Box, Typography, Paper, Button, 
-    CircularProgress, Stack, Divider, TextField, Tooltip, IconButton
+    Box, Typography, Paper, Button,
+    CircularProgress, Stack, Divider, TextField, Tooltip, IconButton, Grid
 } from '@mui/material';
 import {
-    AdsClick as TargetIcon, 
+    AdsClick as TargetIcon,
     TrendingUp, Groups, Storefront, BarChart, RestartAlt
 } from '@mui/icons-material';
 import moment from 'moment';
 import API from '../api/API';
+// Make sure to create and import this new component
+import SalesTrendChart from '../components/SalesTrendChart';
 
 const Dashboard = () => {
-    // Defining initial dates here so handleReset can access them
     const initialCustomDates = {
         start: moment().startOf('month').format('YYYY-MM-DD'),
         end: moment().format('YYYY-MM-DD')
@@ -22,35 +23,46 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [customDates, setCustomDates] = useState(initialCustomDates);
 
-    const fetchStats = useCallback(async () => {
+    // Naya state charts ke data ke liye (API aane tak empty array rakh sakte ho)
+    const [trendData, setTrendData] = useState([]);
+    const [categories, setCategories] = useState([]);
+
+    const fetchDashboardData = useCallback(async () => {
         setLoading(true);
         try {
-            let url = `/dashboard/stats?range=${range}`;
+            let params = `?range=${range}`;
             if (range === 'custom') {
-                url += `&startDate=${customDates.start}&endDate=${customDates.end}`;
+                params += `&startDate=${customDates.start}&endDate=${customDates.end}`;
             }
-            const res = await API.get(url);
-            setStats(res.data.data);
+
+            const [statsRes, trendRes] = await Promise.all([
+                API.get(`/dashboard/stats${params}`),
+                API.get(`/dashboard/sales-trend${params}`)
+            ]);
+
+            setStats(statsRes.data.data);
+            setTrendData(trendRes.data.data || []);
+            setCategories(trendRes.data.categories || []);
         } catch (err) {
-            console.error("Dashboard Error:", err);
+            console.error("Dashboard Fetch Error:", err);
         } finally {
             setLoading(false);
         }
     }, [range, customDates]);
 
     useEffect(() => {
-        if (range !== 'custom') fetchStats();
-    }, [range, fetchStats]);
+        if (range !== 'custom') fetchDashboardData();
+    }, [range, fetchDashboardData]);
 
     const handleReset = () => {
-        setRange('this_week'); 
+        setRange('this_week');
         setCustomDates(initialCustomDates);
     };
 
     return (
-        <Box sx={{ p: 3, bgcolor: '#f4f7f9', minHeight: '100vh' }}>
-            
-            {/* UPDATED HEADER SECTION */}
+        <Box sx={{ p: 3, bgcolor: '#f4f7f9', minHeight: '100vh', overflowX: 'hidden' }}>
+
+            {/* --- TUMHARA ORIGINAL HEADER --- */}
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
                 <Box>
                     <Typography variant="h5" sx={{ fontWeight: 900, color: '#1a203e', letterSpacing: '-0.5px' }}>
@@ -61,7 +73,6 @@ const Dashboard = () => {
                     </Typography>
                 </Box>
 
-                {/* FILTERS AND RESET GROUPED ON THE RIGHT */}
                 <Stack direction="row" spacing={1.5} alignItems="center">
                     <Paper elevation={0} sx={{ p: 0.5, borderRadius: '12px', border: '1px solid #e0e6ed', bgcolor: '#fff' }}>
                         <Stack direction="row" spacing={0.5}>
@@ -86,14 +97,11 @@ const Dashboard = () => {
                     </Paper>
 
                     <Tooltip title="Reset to Weekly">
-                        <IconButton 
+                        <IconButton
                             onClick={handleReset}
-                            sx={{ 
-                                bgcolor: '#fff', 
-                                border: '1px solid #e0e6ed',
-                                borderRadius: '12px',
-                                width: 40,
-                                height: 40,
+                            sx={{
+                                bgcolor: '#fff', border: '1px solid #e0e6ed', borderRadius: '12px',
+                                width: 40, height: 40,
                                 '&:hover': { bgcolor: '#f5f5f5', color: '#ab1d47' }
                             }}
                         >
@@ -103,7 +111,7 @@ const Dashboard = () => {
                 </Stack>
             </Stack>
 
-            {/* CUSTOM FILTER BAR */}
+            {/* --- TUMHARA ORIGINAL CUSTOM FILTER --- */}
             {range === 'custom' && (
                 <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: '12px', border: '1px solid #ab1d4720', bgcolor: '#fff' }}>
                     <Stack direction="row" spacing={2} justifyContent="flex-end" alignItems="center">
@@ -111,74 +119,128 @@ const Dashboard = () => {
                             value={customDates.start} onChange={(e) => setCustomDates({ ...customDates, start: e.target.value })} />
                         <TextField type="date" label="End" size="small" InputLabelProps={{ shrink: true }}
                             value={customDates.end} onChange={(e) => setCustomDates({ ...customDates, end: e.target.value })} />
-                        <Button variant="contained" size="small" onClick={fetchStats} sx={{ bgcolor: '#ab1d47', fontWeight: 700, px: 3 }}>Apply</Button>
+                        <Button variant="contained" size="small" onClick={fetchDashboardData} sx={{ bgcolor: '#ab1d47', fontWeight: 700, px: 3 }}>Apply</Button>
                     </Stack>
                 </Paper>
             )}
 
-            {/* KPI ROW */}
+            {/* --- TUMHARA ORIGINAL KPI ROW --- */}
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress sx={{ color: '#ab1d47' }} /></Box>
             ) : (
-                <Box sx={{ 
-                    display: 'flex', 
-                    gap: 2, 
-                    width: '100%',
-                    flexWrap: 'nowrap',
-                    overflowX: 'auto',
-                    pb: 1
+                <Box sx={{
+                    display: 'flex', gap: 2, width: '100%', flexWrap: 'nowrap', overflowX: 'auto', pb: 1
                 }}>
-                    <StatCard title="Total Revenue" value={`Rs ${Math.round(stats?.totalRevenue || 0).toLocaleString()}`} 
+                    <StatCard title="Total Revenue" value={`Rs ${Math.round(stats?.totalRevenue || 0).toLocaleString()}`}
                         subtitle="Overall Earnings" icon={<BarChart />} color="#673ab7" />
-                    
-                    <StatCard title="Items Sold" value={stats?.itemsSold || '0'} 
+                    <StatCard title="Items Sold" value={stats?.itemsSold || '0'}
                         subtitle="Total Units" icon={<TrendingUp />} color="#ab1d47" />
-                    
-                    <StatCard title="Conversion" value={stats?.conversions || '0%'} 
+                    <StatCard title="Conversion" value={stats?.conversions || '0%'}
                         subtitle="Success Rate" icon={<TargetIcon />} color="#ed6c02" />
-                    
-                    <StatCard title="Present BAs" value={stats?.presentBAs || '0'} 
+                    <StatCard title="Present BAs" value={stats?.presentBAs || '0'}
                         subtitle="Daily Attendance" icon={<Groups />} color="#2e7d32" />
-                    
-                    <StatCard title="Active Stores" value={stats?.activeStores || '0'} 
+                    <StatCard title="Active Stores" value={stats?.activeStores || '0'}
                         subtitle="Working Outlets" icon={<Storefront />} color="#0288d1" />
                 </Box>
             )}
+
+            {/* =========================================================
+                NAYA SECTION: ALAG, SAFE AUR RESPONSIVE CHARTS 
+                Yeh section purane element se bilkul alag hai.
+            ========================================================= */}
+            {!loading && (
+                <Box
+                    component="section"
+                    aria-label="Sales Analytics Charts"
+                    sx={{ mt: 4, width: '100%' }}
+                >
+                    <Grid container spacing={3}>
+
+                        {/* LEFT CHART: Sales Trend (Occupies 8/12 grid space on desktop) */}
+                        <Grid item xs={12} lg={8}>
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 3,
+                                    borderRadius: '20px',
+                                    border: '1px solid #eef2f6',
+                                    bgcolor: '#fff',
+                                    width:'641px',
+                                    height: '420px', // Fixed height taake layout shrink na ho
+                                    display: 'flex',
+                                    flexDirection: 'column'
+                                }}
+                            >
+                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a203e' }}>
+                                    Sales Trend by Brand
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#90a4ae', mb: 3 }}>
+                                    Daily revenue across all brands
+                                </Typography>
+
+                                {/* Chart Container */}
+                                <Box sx={{ flexGrow: 1, minHeight: 0, width: '100%' }}>
+                                    <SalesTrendChart data={trendData} categories={categories} />
+                                </Box>
+                            </Paper>
+                        </Grid>
+
+                        {/* RIGHT CHART: Region-wise Sales (Occupies 4/12 grid space on desktop) */}
+                        <Grid item xs={12} lg={4}>
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 3,
+                                    borderRadius: '20px',
+                                    border: '1px solid #eef2f6',
+                                    bgcolor: '#fff',
+                                    width:'350px',
+                                    height: '420px',
+                                    display: 'flex',
+                                    flexDirection: 'column'
+                                }}
+                            >
+                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a203e' }}>
+                                    Region-wise Sales
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#90a4ae', mb: 3 }}>
+                                    Revenue by region
+                                </Typography>
+
+                                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Typography variant="body2" color="textSecondary">
+                                        Region Chart Component Here
+                                    </Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+
+                    </Grid>
+                </Box>
+            )}
+
         </Box>
     );
 };
 
+// Tumhara original StatCard component
 const StatCard = ({ title, value, subtitle, icon, color }) => (
     <Paper elevation={0} sx={{
-        p: 2, 
-        flex: 1, 
-        minWidth: '190px', 
-        height: '200px', 
-        borderRadius: '20px', 
-        border: '1px solid #eef2f6',
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'flex-start',
-        bgcolor: '#fff',
-        transition: 'all 0.3s ease',
+        p: 2, flex: 1, minWidth: '190px', height: '200px', borderRadius: '20px',
+        border: '1px solid #eef2f6', display: 'flex', flexDirection: 'column',
+        alignItems: 'flex-start', bgcolor: '#fff', transition: 'all 0.3s ease',
         '&:hover': { boxShadow: '0 12px 24px rgba(0,0,0,0.06)', transform: 'translateY(-5px)' }
     }}>
-        <Box sx={{ 
-            p: 1.2, borderRadius: '14px', bgcolor: `${color}10`, color: color, 
-            mb: 2, display: 'inline-flex' 
-        }}>
+        <Box sx={{ p: 1.2, borderRadius: '14px', bgcolor: `${color}10`, color: color, mb: 2, display: 'inline-flex' }}>
             {React.cloneElement(icon, { sx: { fontSize: 26 } })}
         </Box>
-
         <Typography sx={{ color: '#90a4ae', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: 1.2, mb: 0.5 }}>
             {title}
         </Typography>
-
         <Typography sx={{ fontWeight: 900, color: '#1a203e', fontSize: '1.2rem', lineHeight: 1.1, mb: 1 }}>
             {value}
         </Typography>
-
-        <Box sx={{  width: '100%' }}>
+        <Box sx={{ width: '100%' }}>
             <Divider sx={{ mb: 1, opacity: 0.4 }} />
             <Typography sx={{ color: '#78909c', fontWeight: 600, fontSize: '0.7rem' }}>
                 {subtitle}
