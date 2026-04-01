@@ -11,6 +11,7 @@ import moment from 'moment';
 import API from '../api/API';
 // Make sure to create and import this new component
 import SalesTrendChart from '../components/SalesTrendChart';
+import RegionSalesChart from '../components/RegionSalesChart';
 
 const Dashboard = () => {
     const initialCustomDates = {
@@ -18,7 +19,7 @@ const Dashboard = () => {
         end: moment().format('YYYY-MM-DD')
     };
 
-    const [range, setRange] = useState('this_month');
+    const [range, setRange] = useState('this_week');
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [customDates, setCustomDates] = useState(initialCustomDates);
@@ -26,6 +27,7 @@ const Dashboard = () => {
     // Naya state charts ke data ke liye (API aane tak empty array rakh sakte ho)
     const [trendData, setTrendData] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [regionData, setRegionData] = useState([]);
 
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
@@ -35,14 +37,16 @@ const Dashboard = () => {
                 params += `&startDate=${customDates.start}&endDate=${customDates.end}`;
             }
 
-            const [statsRes, trendRes] = await Promise.all([
+            const [statsRes, trendRes, regionRes] = await Promise.all([
                 API.get(`/dashboard/stats${params}`),
-                API.get(`/dashboard/sales-trend${params}`)
+                API.get(`/dashboard/sales-trend${params}`),
+                API.get(`/dashboard/regionwise-sale${params}`)
             ]);
 
             setStats(statsRes.data.data);
             setTrendData(trendRes.data.data || []);
             setCategories(trendRes.data.categories || []);
+            setRegionData(regionRes.data.data || []);
         } catch (err) {
             console.error("Dashboard Fetch Error:", err);
         } finally {
@@ -165,7 +169,7 @@ const Dashboard = () => {
                                     borderRadius: '20px',
                                     border: '1px solid #eef2f6',
                                     bgcolor: '#fff',
-                                    width:'641px',
+                                    width: '641px',
                                     height: '420px', // Fixed height taake layout shrink na ho
                                     display: 'flex',
                                     flexDirection: 'column'
@@ -186,31 +190,22 @@ const Dashboard = () => {
                         </Grid>
 
                         {/* RIGHT CHART: Region-wise Sales (Occupies 4/12 grid space on desktop) */}
+                        {/* RIGHT CHART SECTION MEIN YEH CHANGE KARO */}
                         <Grid item xs={12} lg={4}>
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: '20px',
-                                    border: '1px solid #eef2f6',
-                                    bgcolor: '#fff',
-                                    width:'350px',
-                                    height: '420px',
-                                    display: 'flex',
-                                    flexDirection: 'column'
-                                }}
-                            >
+                            <Paper elevation={0} sx={{
+                                p: 3, borderRadius: '20px', border: '1px solid #eef2f6',
+                                bgcolor: '#fff', width: '350px', height: '420px',
+                                display: 'flex', flexDirection: 'column'
+                            }}>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a203e' }}>
                                     Region-wise Sales
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: '#90a4ae', mb: 3 }}>
-                                    Revenue by region
+                                    Revenue distribution by region
                                 </Typography>
 
-                                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Typography variant="body2" color="textSecondary">
-                                        Region Chart Component Here
-                                    </Typography>
+                                <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+                                    <RegionSalesChart data={regionData} />
                                 </Box>
                             </Paper>
                         </Grid>
