@@ -31,6 +31,7 @@ const Stores = () => {
   const [cities, setCities] = useState([]);
   const [regions, setRegions] = useState([]);
   const [users, setUsers] = useState([]); // For Beauty Advisors
+  const [supervisors, setSupervisors] = useState([]);
 
   // Dialog Control
   const [open, setOpen] = useState(false);
@@ -42,6 +43,7 @@ const Stores = () => {
     city_id: '',
     region_id: '',
     ba_user_id: '',
+    supervisor_id: '',
     channel_id: '',
     targets: ''
 
@@ -65,11 +67,12 @@ const Stores = () => {
 
     const fetchDropdowns = async () => {
       try {
-        const [c, r, u, ch] = await Promise.all([
+        const [c, r, u, ch, sup] = await Promise.all([
           API.get('/cities'),
           API.get('/regions'),
           API.get('/users?limit=1000'),
-          API.get('/channels/getchannels')
+          API.get('/channels/getchannels'),
+          API.get('/users/supervisors')
         ]);
 
         // Name ke hisab se unique karna (Sab se safest tarika)
@@ -86,12 +89,25 @@ const Stores = () => {
         setCities(getUniqueByName(c.data));
         setRegions(getUniqueByName(r.data));
         setChannels(ch.data || []);
+
+
+        // 1. Filter Supervisors: In IDs (5, 21, 22) ko nikal do
+        const excludedIds = [5, 21, 22];
+        const filteredSupervisors = (sup.data.data || []).filter(
+          s => !excludedIds.includes(s.id)
+        );
+        setSupervisors(filteredSupervisors);
+
         // Yahan filter update karein: role 'user' ho AUR active ho
         const activeBAs = u.data.users ? u.data.users.filter(user =>
           user.role === 'user' && user.is_active === true
         ) : [];
 
+        console.log("active bas" , activeBAs);
+
         setUsers(activeBAs);
+
+
 
       } catch (err) {
         console.error("Dropdown Load Error:", err);
@@ -117,6 +133,7 @@ const Stores = () => {
         city_id: store.city_id || '',
         region_id: store.region_id || '',
         ba_user_id: store.ba_user_id || '',
+        supervisor_id: store.supervisor_id || '',
         targets: store.targets || '',
         channel_id: store.channel_id || '',
         is_active: store.is_active
@@ -124,7 +141,7 @@ const Stores = () => {
 
       });
     } else {
-      setFormData({ store_name: '', area: '', city_id: '', region_id: '', ba_user_id: '', targets: '' });
+      setFormData({ store_name: '', area: '', city_id: '', region_id: '', ba_user_id: '', supervisor_id: '', targets: '' });
     }
     setOpen(true);
   };
@@ -209,9 +226,10 @@ const Stores = () => {
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Area</TableCell> {/* 👈 Area Field Added */}
                 {/* <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Manager</TableCell> */}
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Target</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Supervisor</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>BA Assigned</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Channel</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Is_Active</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Status</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1 }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -227,6 +245,11 @@ const Stores = () => {
 
                   <TableCell sx={{ fontSize: '0.875rem' }}>
                     {s.targets ? `Rs. ${parseFloat(s.targets).toLocaleString()}` : '0'}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', px: 1, borderRadius: 1, fontWeight: 'bold' }}>
+                      {s.supervisor?.fullname || s.supervisor?.name || 'Unassigned'}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.875rem' }}>
                     <Typography variant="caption" sx={{
@@ -325,10 +348,7 @@ const Stores = () => {
                   InputProps={{ startAdornment: <InputAdornment position="start">Rs.</InputAdornment> }}
                 />
               </Box>
-            </Box>
 
-            {/* ROW 2: City, Region, Beauty Advisor */}
-            <Box sx={{ display: 'flex', gap: 2 }}>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>City</Typography>
                 <TextField
@@ -340,6 +360,11 @@ const Stores = () => {
                   {cities.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                 </TextField>
               </Box>
+            </Box>
+
+            {/* ROW 2: City, Region, Beauty Advisor */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
+
 
               <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Channel</Typography>
@@ -369,7 +394,22 @@ const Stores = () => {
               </Box>
 
               <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Beauty Advisor (BA)</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Supervisor</Typography>
+                <TextField
+                  select fullWidth size="small"
+                  disabled={mode === 'view'}
+                  value={formData.supervisor_id}
+                  onChange={(e) => setFormData({ ...formData, supervisor_id: e.target.value })}
+                >
+                  <MenuItem value=""><em>None</em></MenuItem>
+                  {supervisors.map(sup => (
+                    <MenuItem key={sup.id} value={sup.id}>{sup.fullname || sup.name}</MenuItem>
+                  ))}
+                </TextField>
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Brand Ambasador</Typography>
                 <TextField
                   select fullWidth size="small"
                   disabled={mode === 'view'}

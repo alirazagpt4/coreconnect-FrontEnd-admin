@@ -233,7 +233,7 @@ const Users = () => {
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>City</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Region</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>ReportTo</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Is_Active</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Status</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1.5 }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
