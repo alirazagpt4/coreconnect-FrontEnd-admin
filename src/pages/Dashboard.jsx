@@ -12,6 +12,9 @@ import API from '../api/API';
 // Make sure to create and import this new component
 import SalesTrendChart from '../components/SalesTrendChart';
 import RegionSalesChart from '../components/RegionSalesChart';
+import CategoryPerformance from '../components/CategoryPerformance';
+import StoreWisePerformance from '../components/StoreWisePerformance.jsx';
+import { formatCompactNumber } from "../utils/formatter.js"
 
 const Dashboard = () => {
     const initialCustomDates = {
@@ -28,6 +31,8 @@ const Dashboard = () => {
     const [trendData, setTrendData] = useState([]);
     const [categories, setCategories] = useState([]);
     const [regionData, setRegionData] = useState([]);
+    const [categoryData, setCategoryData] = useState(null);
+
 
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
@@ -37,16 +42,18 @@ const Dashboard = () => {
                 params += `&startDate=${customDates.start}&endDate=${customDates.end}`;
             }
 
-            const [statsRes, trendRes, regionRes] = await Promise.all([
+            const [statsRes, trendRes, regionRes, catRes] = await Promise.all([
                 API.get(`/dashboard/stats${params}`),
                 API.get(`/dashboard/sales-trend${params}`),
-                API.get(`/dashboard/regionwise-sale${params}`)
+                API.get(`/dashboard/regionwise-sale${params}`),
+                API.get(`/dashboard/categorywise-performance${params}`)
             ]);
 
             setStats(statsRes.data.data);
             setTrendData(trendRes.data.data || []);
             setCategories(trendRes.data.categories || []);
             setRegionData(regionRes.data.data || []);
+            setCategoryData(catRes.data);
         } catch (err) {
             console.error("Dashboard Fetch Error:", err);
         } finally {
@@ -135,7 +142,7 @@ const Dashboard = () => {
                 <Box sx={{
                     display: 'flex', gap: 2, width: '100%', flexWrap: 'nowrap', overflowX: 'auto', pb: 1
                 }}>
-                    <StatCard title="Total Revenue" value={`Rs ${Math.round(stats?.totalRevenue || 0).toLocaleString()}`}
+                    <StatCard title="Total Revenue" value={`Rs ${formatCompactNumber(stats?.totalRevenue)}`}
                         subtitle="Overall Earnings" icon={<BarChart />} color="#673ab7" />
                     <StatCard title="Items Sold" value={stats?.itemsSold || '0'}
                         subtitle="Total Units" icon={<TrendingUp />} color="#ab1d47" />
@@ -210,7 +217,30 @@ const Dashboard = () => {
                             </Paper>
                         </Grid>
 
+
+                        <Grid container spacing={4} sx={{ mt: 1 }}> {/* mt: 1 spacing ke liye */}
+
+
+                            {/* Right Side: Category Performance (Stays at 4 units) */}
+                            <Grid item xs={12} lg={4}>
+                                {categoryData && <CategoryPerformance responseData={categoryData} />}
+                            </Grid>
+
+                            {/* Left Side: Store Wise (Stretched to 8 units) */}
+                            <Grid item xs={12} lg={8}>
+                                <StoreWisePerformance />
+                            </Grid>
+
+
+                        </Grid>
+
+
                     </Grid>
+
+
+
+
+
                 </Box>
             )}
 
