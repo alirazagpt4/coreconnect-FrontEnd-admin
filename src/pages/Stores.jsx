@@ -43,6 +43,7 @@ const Stores = () => {
     city_id: '',
     region_id: '',
     ba_user_id: '',
+    ba_user_id_2: '',
     supervisor_id: '',
     channel_id: '',
     targets: ''
@@ -103,7 +104,7 @@ const Stores = () => {
           user.role === 'user' && user.is_active === true
         ) : [];
 
-        console.log("active bas" , activeBAs);
+        console.log("active bas", activeBAs);
 
         setUsers(activeBAs);
 
@@ -133,6 +134,7 @@ const Stores = () => {
         city_id: store.city_id || '',
         region_id: store.region_id || '',
         ba_user_id: store.ba_user_id || '',
+        ba_user_id_2: store.ba_user_id_2 || '',
         supervisor_id: store.supervisor_id || '',
         targets: store.targets || '',
         channel_id: store.channel_id || '',
@@ -141,7 +143,7 @@ const Stores = () => {
 
       });
     } else {
-      setFormData({ store_name: '', area: '', city_id: '', region_id: '', ba_user_id: '', supervisor_id: '', targets: '' });
+      setFormData({ store_name: '', area: '', city_id: '', region_id: '', ba_user_id: '', ba_user_id_2: '', supervisor_id: '', targets: '' });
     }
     setOpen(true);
   };
@@ -156,7 +158,11 @@ const Stores = () => {
       }
       setOpen(false);
       fetchStores();
-    } catch (err) { alert("Action Failed! Check console."); }
+    } catch (err) {
+      // 👈 Backend message dikhane ke liye alert ya toast use karein
+      const msg = err.response?.data?.message || "Action Failed!";
+      alert(msg);
+    }
   };
 
 
@@ -252,13 +258,44 @@ const Stores = () => {
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.875rem' }}>
-                    <Typography variant="caption" sx={{
-                      bgcolor: s.beauty_advisor ? '#e3f2fd' : '#f5f5f5',
-                      color: s.beauty_advisor ? '#1976d2' : '#757575',
-                      px: 1, borderRadius: 1, fontWeight: 'bold'
-                    }}>
-                      {s.beauty_advisor?.name || 'Unassigned'}
-                    </Typography>
+                    <Stack spacing={0.5}>
+                      {/* Primary BA: Sirf tab dikhega jab assigned ho */}
+                      {s.beauty_advisor && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            bgcolor: '#e3f2fd',
+                            color: '#1976d2',
+                            px: 1, borderRadius: 1, fontWeight: 'bold',
+                            display: 'inline-block', width: 'fit-content'
+                          }}
+                        >
+                          BA 1: {s.beauty_advisor.name}
+                        </Typography>
+                      )}
+
+                      {/* Secondary BA: Sirf tab dikhega jab assigned ho */}
+                      {s.beauty_advisor_2 && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            bgcolor: '#fff3e0',
+                            color: '#e65100',
+                            px: 1, borderRadius: 1, fontWeight: 'bold',
+                            display: 'inline-block', width: 'fit-content'
+                          }}
+                        >
+                          BA 2: {s.beauty_advisor_2.name}
+                        </Typography>
+                      )}
+
+                      {/* Agar dono assigned nahi hain, toh dash ya simple text */}
+                      {!s.beauty_advisor && !s.beauty_advisor_2 && (
+                        <Typography variant="caption" sx={{ color: '#757575', fontStyle: 'italic' }}>
+                          Unassigned
+                        </Typography>
+                      )}
+                    </Stack>
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.875rem' }}>
                     <Typography variant="caption" sx={{ bgcolor: '#f3e5f5', color: '#7b1fa2', px: 1, borderRadius: 1, fontWeight: 'bold' }}>
@@ -409,7 +446,7 @@ const Stores = () => {
               </Box>
 
               <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Brand Ambasador</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Primary BA</Typography>
                 <TextField
                   select fullWidth size="small"
                   disabled={mode === 'view'}
@@ -421,6 +458,19 @@ const Stores = () => {
                 </TextField>
               </Box>
 
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Secondary BA</Typography>
+                <TextField
+                  select fullWidth size="small"
+                  disabled={mode === 'view'}
+                  value={formData.ba_user_id_2}
+                  onChange={(e) => setFormData({ ...formData, ba_user_id_2: e.target.value })}
+                  InputProps={{ inputProps: { 'aria-label': 'Select Secondary Beauty Advisor' } }}
+                >
+                  <MenuItem value=""><em>None</em></MenuItem>
+                  {users.map(u => <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>)}
+                </TextField>
+              </Box>
               {/* ROW 3: Account Status for Edit/View */}
               {(mode === 'edit' || mode === 'view') && (
                 <Box sx={{ flex: 1 }}> {/* Alignment matching other rows */}
