@@ -130,15 +130,45 @@ const Users = () => {
 
     const handleSubmit = async () => {
         if (mode === 'view') { setOpen(false); return; }
+
+        // --- FRONTEND VALIDATION LOGIC ---
+        if (!formData.name || !formData.fullname || !formData.phone) {
+            return alert("Error: User Name, Full Name, and Phone are mandatory!");
+        }
+
+        if (mode === 'add' && (!formData.password || formData.password.length < 6)) {
+            return alert("Error: Password is required and must be at least 6 characters long.");
+        }
+
+        // --- DATA CLEANING (Ensuring Sequelize Compatibility) ---
+        const cleanedPayload = {
+            ...formData,
+            // Convert empty strings to NULL for IDs
+            city_id: formData.city_id || null,
+            region_id: formData.region_id || null,
+            designation_id: formData.designation_id || null,
+            reportTo: formData.reportTo || null,
+            // Phone numbers hamesha string hone chahiye, handle leading zeros
+            phone: formData.phone.toString().trim()
+        };
+
         try {
             if (mode === 'edit') {
-                await API.patch(`/users/${selectedId}`, formData);
+                await API.patch(`/users/${selectedId}`, cleanedPayload);
             } else {
-                await API.post('/users/create-user', formData);
+                await API.post('/users/create-user', cleanedPayload);
             }
             setOpen(false);
             fetchUsers();
-        } catch (err) { alert("Operation failed! Check console."); }
+            alert("User Processed Successfully!");
+        } catch (err) {
+            // Detailed Error Feedback
+            const errorMsg = err.response?.data?.message || "Operation failed!";
+            const detailedError = err.response?.data?.error || "";
+
+            console.error("User Submit Error:", err.response?.data);
+            alert(`Error: ${errorMsg} ${detailedError}`);
+        }
     };
 
     const handleDelete = async (id) => {
@@ -222,7 +252,20 @@ const Users = () => {
 
             {/* Users Table */}
             <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflowX: 'auto' }}>
-                <Table size="small"> {/* 👈 Table size small kar di */}
+                <Table
+                    size="small"
+                    sx={{
+                        tableLayout: 'fixed', // Uniformity ke liye zaroori hai
+                        '& .MuiTableCell-root': {
+                            fontSize: '0.75rem', // Default se chota (12px approx)
+                            padding: '4px 8px',  // Vertical space kam karne ke liye
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }
+                    }}
+                >
+                    {/* minWidth ensures it doesn't crush on mobile, tableLayout: fixed ensures uniformity */}
                     <TableHead sx={{ bgcolor: '#1b2142' }}>
                         <TableRow>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>User</TableCell>
@@ -233,7 +276,7 @@ const Users = () => {
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>City</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Region</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>ReportTo</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Status</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 , textAlign:'center'}}>Status</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1.5 }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>

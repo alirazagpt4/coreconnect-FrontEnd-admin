@@ -247,18 +247,31 @@ const ItemsMaster = () => {
           </Stack>
         </Paper>
 
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
-          <Table size="small">
+        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflowX: 'auto' }}>
+          <Table
+            size="small"
+            sx={{
+              tableLayout: 'fixed', // Uniformity ke liye zaroori hai
+              '& .MuiTableCell-root': {
+                fontSize: '0.75rem', // Default se chota (12px approx)
+                padding: '4px 8px',  // Vertical space kam karne ke liye
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }
+            }}
+          >
+            {/* minWidth ensures it doesn't crush on mobile, tableLayout: fixed ensures uniformity */}
             <TableHead sx={{ bgcolor: '#1b2142' }}>
               <TableRow>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Sub-Cat</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Item Name</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>MRP</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Dis %</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Net Price</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '12%' }}>Category</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '12%' }}>Sub-Cat</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '25%' }}>Item Name</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '10%' }}>MRP</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '8%' }}>Dis %</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '12%' }}>Net Price</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '8%', textAlign: 'center' }}>Status</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '13%', textAlign: 'center' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

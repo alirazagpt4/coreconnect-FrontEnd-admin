@@ -150,18 +150,40 @@ const Stores = () => {
 
   const handleSubmit = async () => {
     if (mode === 'view') { setOpen(false); return; }
+
+    // 🔥 CORE FIX: Data Transformation
+    const payload = {
+      ...formData,
+      // Agar supervisor_id empty string hai toh usay null kar do
+      supervisor_id: formData.supervisor_id || null,
+
+      // Target ko string se number mein convert karo
+      targets: formData.targets ? parseFloat(formData.targets) : 0,
+
+      // Baki IDs ke liye bhi safety check
+      ba_user_id: formData.ba_user_id || null,
+      ba_user_id_2: formData.ba_user_id_2 || null,
+      channel_id: formData.channel_id || null
+    };
+
+    console.log("Final Payload being sent:", payload);
+
     try {
       if (mode === 'edit') {
-        await API.patch(`/store/${selectedId}`, formData);
+        await API.patch(`/store/${selectedId}`, payload);
       } else {
-        await API.post('/store/create-store', formData);
+        await API.post('/store/create-store', payload);
       }
       setOpen(false);
       fetchStores();
+      // alert("Store successfully created/updated!");
     } catch (err) {
-      // 👈 Backend message dikhane ke liye alert ya toast use karein
+      // Backend se aane wala exact error message
       const msg = err.response?.data?.message || "Action Failed!";
-      alert(msg);
+      const dbError = err.response?.data?.error || ""; // Sequelize error details
+
+      console.error("Submission Error:", err.response?.data);
+      alert(`Error: ${msg} ${dbError}`);
     }
   };
 
@@ -223,8 +245,21 @@ const Stores = () => {
 
         </Stack>
 
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflow: 'hidden' }}>
-          <Table size="small"> {/* 👈 Size small karne se row ki height kam ho jayegi */}
+        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflowX: 'auto' }}>
+          <Table
+            size="small"
+            sx={{
+              tableLayout: 'fixed', // Uniformity ke liye zaroori hai
+              '& .MuiTableCell-root': {
+                fontSize: '0.75rem', // Default se chota (12px approx)
+                padding: '4px 8px',  // Vertical space kam karne ke liye
+                whiteSpace: 'wrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }
+            }}
+          >
+            {/* minWidth ensures it doesn't crush on mobile, tableLayout: fixed ensures uniformity */}
             <TableHead sx={{ bgcolor: '#1b2142' }}>
               <TableRow>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1 }}>Store Name</TableCell>

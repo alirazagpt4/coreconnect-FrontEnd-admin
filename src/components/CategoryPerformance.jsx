@@ -30,7 +30,7 @@ const CategoryPerformance = ({ responseData }) => {
             borderRadius: 4,
             p: 2.5, // Thora sa padding kam kiya balance ke liye
             boxShadow: '0px 4px 20px rgba(0,0,0,0.05)',
-            height: '100%',
+            height: '470px',
             display: 'flex',
             flexDirection: 'column'
         }}>

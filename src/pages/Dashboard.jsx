@@ -32,6 +32,7 @@ const Dashboard = () => {
     const [categories, setCategories] = useState([]);
     const [regionData, setRegionData] = useState([]);
     const [categoryData, setCategoryData] = useState(null);
+    const [storePerformance, setStorePerformance] = useState([]);
 
 
     const fetchDashboardData = useCallback(async () => {
@@ -42,11 +43,12 @@ const Dashboard = () => {
                 params += `&startDate=${customDates.start}&endDate=${customDates.end}`;
             }
 
-            const [statsRes, trendRes, regionRes, catRes] = await Promise.all([
+            const [statsRes, trendRes, regionRes, catRes, storeRes] = await Promise.all([
                 API.get(`/dashboard/stats${params}`),
                 API.get(`/dashboard/sales-trend${params}`),
                 API.get(`/dashboard/regionwise-sale${params}`),
-                API.get(`/dashboard/categorywise-performance${params}`)
+                API.get(`/dashboard/categorywise-performance${params}`),
+                API.get(`/dashboard/storewise-performance${params}`)
             ]);
 
             setStats(statsRes.data.data);
@@ -54,6 +56,9 @@ const Dashboard = () => {
             setCategories(trendRes.data.categories || []);
             setRegionData(regionRes.data.data || []);
             setCategoryData(catRes.data);
+            setStorePerformance(storeRes.data.data || []);
+
+
         } catch (err) {
             console.error("Dashboard Fetch Error:", err);
         } finally {
@@ -218,19 +223,13 @@ const Dashboard = () => {
                         </Grid>
 
 
-                        <Grid container spacing={4} sx={{ mt: 1 }}> {/* mt: 1 spacing ke liye */}
-
-
-                            {/* Right Side: Category Performance (Stays at 4 units) */}
-                            <Grid item xs={12} lg={4}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={4} lg={4}>
                                 {categoryData && <CategoryPerformance responseData={categoryData} />}
                             </Grid>
-
-                            {/* Left Side: Store Wise (Stretched to 8 units) */}
-                            <Grid item xs={12} lg={8}>
-                                <StoreWisePerformance />
+                            <Grid item xs={12} md={8} lg={8}> {/* MD use karo for better flexibility */}
+                                <StoreWisePerformance data={storePerformance} />
                             </Grid>
-
 
                         </Grid>
 
