@@ -15,6 +15,7 @@ import RegionSalesChart from '../components/RegionSalesChart';
 import CategoryPerformance from '../components/CategoryPerformance';
 import StoreWisePerformance from '../components/StoreWisePerformance.jsx';
 import ShortItemsPerformance from '../components/ShortItemsPerformance.jsx';
+import ExpiredStockPerformance from '../components/ExpiryStockPerformance.jsx';
 import { formatCompactNumber } from "../utils/formatter.js"
 
 const Dashboard = () => {
@@ -23,7 +24,7 @@ const Dashboard = () => {
         end: moment().format('YYYY-MM-DD')
     };
 
-    const [range, setRange] = useState('this_week');
+    const [range, setRange] = useState('this_month');
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [customDates, setCustomDates] = useState(initialCustomDates);
@@ -35,6 +36,8 @@ const Dashboard = () => {
     const [categoryData, setCategoryData] = useState(null);
     const [storePerformance, setStorePerformance] = useState([]);
     const [shortItemsData, setShortItemsData] = useState({ summary: {}, data: [] });
+    const [expiryStockData, setExpiryStockData] = useState({ summary: {}, data: [] });
+
 
 
     const fetchDashboardData = useCallback(async () => {
@@ -45,13 +48,14 @@ const Dashboard = () => {
                 params += `&startDate=${customDates.start}&endDate=${customDates.end}`;
             }
 
-            const [statsRes, trendRes, regionRes, catRes, storeRes, shortRes] = await Promise.all([
+            const [statsRes, trendRes, regionRes, catRes, storeRes, shortRes, expiryRes] = await Promise.all([
                 API.get(`/dashboard/stats${params}`),
                 API.get(`/dashboard/sales-trend${params}`),
                 API.get(`/dashboard/regionwise-sale${params}`),
                 API.get(`/dashboard/categorywise-performance${params}`),
                 API.get(`/dashboard/storewise-performance${params}`),
                 API.get(`/dashboard/shortitems-kpi${params}`),
+                API.get(`/dashboard/expirystock-kpi${params}`),
             ]);
 
             setStats(statsRes.data.data);
@@ -61,8 +65,10 @@ const Dashboard = () => {
             setCategoryData(catRes.data);
             setStorePerformance(storeRes.data.data || []);
             setShortItemsData(shortRes.data);
+            setExpiryStockData(expiryRes.data);
 
             console.log("short items data :::::", shortRes.data);
+            console.log("expiry stock data :::::", expiryRes.data);
 
 
         } catch (err) {
@@ -77,7 +83,7 @@ const Dashboard = () => {
     }, [range, fetchDashboardData]);
 
     const handleReset = () => {
-        setRange('this_week');
+        setRange('this_month');
         setCustomDates(initialCustomDates);
     };
 
@@ -245,12 +251,12 @@ const Dashboard = () => {
 
                             {/* Short Items Card - 6 Columns */}
                             <Grid item xs={12} lg={6}>
-                                {!loading && <ShortItemsPerformance responseData={shortItemsData} />}
+                                <ShortItemsPerformance responseData={shortItemsData} />
                             </Grid>
 
                             {/* You can put another component here for the remaining 6 columns */}
                             <Grid item xs={12} lg={6}>
-                                {/* Placeholder for future component or move an existing one here */}
+                                <ExpiredStockPerformance responseData={expiryStockData} />
                             </Grid>
 
                         </Grid>
