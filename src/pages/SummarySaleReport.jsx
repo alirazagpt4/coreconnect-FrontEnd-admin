@@ -110,23 +110,64 @@ const SummaryReport = () => {
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f1f3f4' }} component="main">
 
-            {/* Header / Summary Info */}
-            <Paper elevation={1} sx={{ p: 1, px: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 0, bgcolor: '#fff' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Summarize sx={{ color: '#ab1d47', fontSize: 20 }} />
-                    <Typography sx={{ fontWeight: 800, fontSize: '14px', letterSpacing: '0.5px' }}>SALES SUMMARY REPORT</Typography>
+            {/* MAIN HEADER CONTAINER */}
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                p: 1.5,
+                px: 2,
+
+                borderBottom: '1px solid #e0e0e0',
+                flexWrap: 'wrap',
+                gap: 2
+            }}>
+                {/* Left Side: Title & Icon */}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Summarize sx={{ mr: 1, color: '#ab1d47', fontSize: 24 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142', fontSize: '1.1rem' }}>
+                        Sales Summary Report
+                    </Typography>
                 </Box>
+
+                {/* Right Side: GRAND TOTAL SUMMARY (Design matched with Daily Sales Report) */}
                 {summary && (
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Box sx={{ bgcolor: '#1b2142', color: 'white', px: 1.5, py: 0.3, borderRadius: 1 }}>
-                            <Typography sx={{ fontSize: '11px', fontWeight: 500 }}>
-                                TOTAL QTY: <b>{Math.round(summary.grandTotalQty)}</b> |
-                                VAL: <b>{Math.round(summary.grandTotalVal).toLocaleString()}</b>
+                    <Paper elevation={0} sx={{
+                        display: 'flex',
+                        gap: 4,
+                        p: 1.2,
+                        px: 3,
+                        bgcolor: '#1b2142',
+                        color: 'white',
+                        borderRadius: 2,
+                        alignItems: 'center',
+                        boxShadow: '0px 4px 10px rgba(0,0,0,0.15)'
+                    }}>
+                        {/* Total Qty */}
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem', textTransform: 'uppercase' }}>
+                                Total Qty
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ffeb3b' }}>
+                                {Math.round(summary.grandTotalQty).toLocaleString()}
                             </Typography>
                         </Box>
-                    </Box>
+
+                        {/* Vertical Divider (Manual styled box to match your reference) */}
+                        <Box sx={{ width: '1px', bgcolor: '#444', height: '25px', alignSelf: 'center' }} />
+
+                        {/* Total Value */}
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem', textTransform: 'uppercase' }}>
+                                Total Value
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
+                                Rs. {Math.round(summary.grandTotalVal).toLocaleString()}
+                            </Typography>
+                        </Box>
+                    </Paper>
                 )}
-            </Paper>
+            </Box>
 
             {/* TWO-ROW FILTERS SECTION */}
             <Paper variant="outlined" sx={{ m: 1, p: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5, borderRadius: '4px' }}>
@@ -175,24 +216,52 @@ const SummaryReport = () => {
 
                     <Box sx={{ display: 'flex', gap: 0.8, ml: 'auto' }}>
                         <Tooltip title="Reset Filters">
-                            <IconButton onClick={resetFilters} size="small" sx={{ border: '1px solid #ccc' }}><RestartAlt fontSize="small" /></IconButton>
+                            <IconButton
+                                onClick={resetFilters}
+                                size="small"
+                                sx={{ border: '1px solid #ccc', borderRadius: '4px' }}
+                            >
+                                <RestartAlt fontSize="small" />
+                            </IconButton>
                         </Tooltip>
+
                         <Button
                             variant="contained"
                             onClick={handleGenerateReport}
                             disabled={loading}
                             size="small"
-                            sx={{ bgcolor: '#1b2142', height: '32px', minWidth: '100px', '&:hover': { bgcolor: '#2c345e' } }}
+                            sx={{
+                                bgcolor: '#ab1d47', // App Standard Red/Maroon
+                                height: '32px',
+                                minWidth: '120px',
+                                fontWeight: 700,
+                                fontSize: '11px',
+                                '&:hover': { bgcolor: '#8e183b' },
+                                '&.Mui-disabled': { bgcolor: '#f5f5f5' }
+                            }}
                         >
-                            {loading ? <CircularProgress size={16} color="inherit" /> : <><Search sx={{ fontSize: 16, mr: 0.5 }} /> FETCH</>}
+                            {loading ? (
+                                <CircularProgress size={16} color="inherit" />
+                            ) : (
+                                <>
+
+                                    {loading ? "FETCHING..." : "GENERATE"}
+                                </>
+                            )}
                         </Button>
+
                         <Button
                             variant="contained"
                             color="success"
                             onClick={handleExcelExport}
                             disabled={loading || reportData.length === 0}
                             size="small"
-                            sx={{ height: '32px', minWidth: '100px' }}
+                            sx={{
+                                height: '32px',
+                                minWidth: '100px',
+                                fontWeight: 700,
+                                fontSize: '11px'
+                            }}
                         >
                             <FileDownload sx={{ fontSize: 16, mr: 0.5 }} /> EXCEL
                         </Button>

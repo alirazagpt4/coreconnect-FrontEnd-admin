@@ -181,7 +181,7 @@ const SalesReport = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Assessment sx={{ mr: 1, color: '#ab1d47' }} />
                         <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1b2142' }}>
-                            Sales Report
+                            Daily Sales Report
                         </Typography>
                     </Box>
 

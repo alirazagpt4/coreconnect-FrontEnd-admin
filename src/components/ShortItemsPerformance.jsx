@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Box, Typography, Paper, Chip, Divider } from '@mui/material';
 import { Inventory2Outlined as ShortItemsIcon } from '@mui/icons-material';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
 const ShortItemsPerformance = ({ responseData }) => {
     const brandColors = {
@@ -34,7 +35,7 @@ const ShortItemsPerformance = ({ responseData }) => {
     return (
         <Paper elevation={0} sx={{
             p: 2, borderRadius: '16px', border: '1px solid #eef2f6',
-            bgcolor: '#fff', height: '420px', width:'490px', display: 'flex', flexDirection: 'column'
+            bgcolor: '#fff', height: '420px', width: '490px', display: 'flex', flexDirection: 'column'
         }}>
             {/* Header: Compact & Complete */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -45,7 +46,7 @@ const ShortItemsPerformance = ({ responseData }) => {
                     }}>
                         <ShortItemsIcon sx={{ fontSize: 18 }} />
                     </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'column',  }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', }}>
                         <Typography sx={{ fontWeight: 800, color: '#1a203e', fontSize: '0.75rem' }}>
                             Short Items
                         </Typography>
@@ -94,7 +95,7 @@ const ShortItemsPerformance = ({ responseData }) => {
                                 bgcolor: '#ffecb3', color: '#b26a00',
                                 fontWeight: 900, fontSize: '0.8rem', borderRadius: '6px', mr: 1.2
                             }}>
-                                {item.count}
+                                <FiberManualRecordIcon sx={{ fontSize: '12px', color: item.color }} />
                             </Box>
 
                             <Box sx={{ flexGrow: 1, minWidth: 0 }}>

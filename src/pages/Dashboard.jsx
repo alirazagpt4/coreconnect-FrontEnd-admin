@@ -71,6 +71,10 @@ const Dashboard = () => {
             console.log("expiry stock data :::::", expiryRes.data);
 
 
+            console.log("DEBUG CHART DATA:", trendRes.data.data[0]);
+            console.log("DEBUG CATEGORIES:", trendRes.data.categories);
+
+
         } catch (err) {
             console.error("Dashboard Fetch Error:", err);
         } finally {

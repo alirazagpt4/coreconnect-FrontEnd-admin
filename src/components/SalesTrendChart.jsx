@@ -1,5 +1,5 @@
 import { Typography, Box } from '@mui/material';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, Legend, ResponsiveContainer
@@ -7,17 +7,35 @@ import {
 
 const SalesTrendChart = ({ data, categories }) => {
     const brandColors = {
+        'RIVAJ': '#f59e0b',
         'AMRIJ': '#a855f7',
         'RHD': '#ec4899',
-        'RIVAJ': '#f59e0b',
-        'NO!MO!': '#10b981',
-        'EVERNOYA': '#3b82f6'
+        'EVERNOYA': '#3b82f6',
+        'NO!MO!': '#10b981'
     };
 
-    // Helper function for formatting
+    // Priority Order definition
+    const priorityOrder = ['RIVAJ', 'AMRIJ', 'RHD', 'EVERNOYA', 'NO!MO!'];
+
+    const sortedCategories = useMemo(() => {
+        return [...categories].sort((a, b) => {
+            return priorityOrder.indexOf(a) - priorityOrder.indexOf(b);
+        });
+    }, [categories]);
+
+    // Legend ko force karne ke liye manual payload banaya
+    const legendPayload = useMemo(() => {
+        return sortedCategories.map(brand => ({
+            value: brand,
+            type: 'circle',
+            id: brand,
+            color: brandColors[brand] || '#cbd5e1'
+        }));
+    }, [sortedCategories]);
+
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('en-US', {
-            maximumFractionDigits: 0, // Points khatam karne ke liye
+            maximumFractionDigits: 0,
         }).format(value);
     };
 
@@ -30,9 +48,10 @@ const SalesTrendChart = ({ data, categories }) => {
     return (
         <ResponsiveContainer width="100%" height="100%">
             <BarChart
+                // IMPORTANT: Key badalne se chart re-render force hoga
+                key={`force-refresh-${sortedCategories.join('')}`} // Is se pura chart re-mount hoga
                 data={data}
-                margin={{ top: 10, right: 10, left: 10, bottom: 0 }} // Left margin thora barhaya hai
-                barGap={4}
+                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
             >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
@@ -45,13 +64,12 @@ const SalesTrendChart = ({ data, categories }) => {
                 <YAxis
                     axisLine={false}
                     tickLine={false}
-                    width={80} // Width zaroori hai taake 2,333,333 pura nazar aaye
+                    width={80}
                     tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
-                    tickFormatter={formatCurrency} // Yahan formatter apply kiya
+                    tickFormatter={formatCurrency}
                 />
                 <Tooltip
                     cursor={{ fill: '#f8fafc' }}
-                    // 'name' yahan brand ka naam (e.g., AMRIJ, RIVAJ) automatically utha lega
                     formatter={(value, name) => [formatCurrency(value), name]}
                     contentStyle={{
                         borderRadius: '12px',
@@ -61,19 +79,44 @@ const SalesTrendChart = ({ data, categories }) => {
                     }}
                 />
                 <Legend
-                    verticalAlign="bottom"
-                    align="center"
-                    iconType="circle"
-                    wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 700 }}
+                    content={(props) => {
+                        // Hum props ki bajaye apni sortedCategories use karenge
+                        return (
+                            <ul style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                gap: '20px',
+                                listStyle: 'none',
+                                padding: 0,
+                                marginTop: '20px',
+                                fontSize: '11px',
+                                fontWeight: 700
+                            }}>
+                                {sortedCategories.map((brand) => (
+                                    <li key={`legend-${brand}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <div style={{
+                                            width: '10px',
+                                            height: '10px',
+                                            borderRadius: '50%',
+                                            backgroundColor: brandColors[brand]
+                                        }} />
+                                        <span style={{ color: '#64748b' }}>{brand}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        );
+                    }}
                 />
 
-                {categories.map((brand) => (
+                {sortedCategories.map((brand) => (
                     <Bar
                         key={brand}
                         dataKey={brand}
                         fill={brandColors[brand] || '#cbd5e1'}
                         radius={[3, 3, 0, 0]}
                         barSize={12}
+                        // Animation active rakhen taake render order saaf nazar aaye
+                        isAnimationActive={true}
                     />
                 ))}
             </BarChart>
