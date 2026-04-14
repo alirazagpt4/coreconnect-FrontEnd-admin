@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format } from 'date-fns';
@@ -42,6 +42,8 @@ const AttendanceReport = () => {
         channel_id: ''
     });
 
+
+
     const handleGenerateReport = async () => {
         setLoading(true);
         try {
@@ -67,6 +69,7 @@ const AttendanceReport = () => {
                 ]);
                 setCities(c.data);
                 setStores(s.data.stores);
+                console.log("stores", s.data.stores)
                 setChannels(ch.data || []);
                 // JSON ke mutabiq designation.name "BA" hona chahiye
                 const baUsersOnly = u.data.users.filter(user =>
@@ -78,6 +81,44 @@ const AttendanceReport = () => {
         };
         fetchFiltersData();
     }, []);
+
+
+
+    // 1. Channel ke mutabiq Stores filter karein
+    const filteredStores = useMemo(() => {
+        if (!filters.channel_id) return stores;
+        return stores.filter(s => s.channel_id === filters.channel_id || s.channelId === filters.channel_id);
+    }, [filters.channel_id, stores]);
+
+    // 2. City ke mutabiq mazeed filter (Double Dependence)
+    const cityAndChannelFilteredStores = useMemo(() => {
+        if (!filters.city_id) return filteredStores;
+        return filteredStores.filter(s => s.city_id === filters.city_id);
+    }, [filters.city_id, filteredStores]);
+
+    const filteredUsers = useMemo(() => {
+        // Agar koi store select nahi hai, toh purana filter (BAs only) dikhao
+        if (!filters.store_id) return users;
+
+        // 1. Selected store ka pura object dhoondo
+        const selectedStore = stores.find(s => String(s.id) === String(filters.store_id));
+
+        if (selectedStore) {
+            // 2. Dono possible BA IDs ko ek array mein rakho (null filter kar do)
+            const relevantUserIds = [
+                selectedStore.ba_user_id,
+                selectedStore.ba_user_id_2
+            ].filter(id => id !== null);
+
+            // 3. Users array mein se sirf wo log nikalo jo in IDs mein hain
+            return users.filter(u =>
+                relevantUserIds.includes(Number(u.id)) ||
+                relevantUserIds.includes(String(u.id))
+            );
+        }
+
+        return [];
+    }, [filters.store_id, users, stores]);
 
     const getRowSpans = (data) => {
         const spans = [];
@@ -122,6 +163,37 @@ const AttendanceReport = () => {
         // Utility function ko call kar rahe hain
         handleExportToExcel(formattedData, "Attendance_Report");
     };
+
+
+
+    const handleChannelChange = (e) => {
+        const val = e.target.value;
+        setFilters(prev => ({
+            ...prev,
+            channel_id: val,
+            store_id: '', // Reset Store when Channel changes
+            ba_id: ''     // Reset BA when Channel changes
+        }));
+    };
+
+    const handleCityChange = (e) => {
+        const val = e.target.value;
+        setFilters(prev => ({
+            ...prev,
+            city_id: val,
+            store_id: '' // Reset Store when City changes
+        }));
+    };
+
+    const handleStoreChange = (e) => {
+        const val = e.target.value;
+        setFilters(prev => ({
+            ...prev,
+            store_id: val,
+            ba_id: '' // Reset BA when Store changes
+        }));
+    };
+
 
     return (
         <Box sx={{ p: 2, bgcolor: '#f4f6f8', minHeight: '100vh' }}>
@@ -212,7 +284,7 @@ const AttendanceReport = () => {
                         </Box>
                         <Box sx={filterBoxStyle}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>City</Typography>
-                            <TextField select fullWidth size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value })} SelectProps={{ sx: { py: 0 } }}>
+                            <TextField select fullWidth size="small" value={filters.city_id} onChange={handleCityChange}>
                                 <MenuItem value="">All Cities</MenuItem>
                                 {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                             </TextField>
@@ -221,7 +293,7 @@ const AttendanceReport = () => {
                         {/* 👇 New Channel Filter */}
                         <Box sx={filterBoxStyle}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Channel</Typography>
-                            <TextField select fullWidth size="small" value={filters.channel_id} onChange={(e) => setFilters({ ...filters, channel_id: e.target.value })}>
+                            <TextField select fullWidth size="small" value={filters.channel_id} onChange={handleChannelChange}>
                                 <MenuItem value="">All Channels</MenuItem>
                                 {channels.map(ch => <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>)}
                             </TextField>
@@ -232,16 +304,18 @@ const AttendanceReport = () => {
                     <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}>
                         <Box sx={filterBoxStyle}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>Store</Typography>
-                            <TextField select fullWidth size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })}>
+                            <TextField select fullWidth size="small" value={filters.store_id} onChange={handleStoreChange}>
                                 <MenuItem value="">All Stores</MenuItem>
-                                {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}  {s.area ? `(${s.area})` : ''}</MenuItem>)}
+                                {cityAndChannelFilteredStores.map(s => (
+                                    <MenuItem key={s.id} value={s.id}>{s.store_name} {s.area ? `(${s.area})` : ''}</MenuItem>
+                                ))}
                             </TextField>
                         </Box>
                         <Box sx={filterBoxStyle}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#666', mb: 0.2, display: 'block', fontSize: '0.7rem' }}>BA Name</Typography>
                             <TextField select fullWidth size="small" value={filters.ba_id} onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })}>
                                 <MenuItem value="">All BAs</MenuItem>
-                                {users?.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
+                                {filteredUsers.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
                             </TextField>
                         </Box>
                         <Box sx={filterBoxStyle}>

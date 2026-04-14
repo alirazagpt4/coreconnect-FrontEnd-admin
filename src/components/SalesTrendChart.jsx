@@ -10,12 +10,12 @@ const SalesTrendChart = ({ data, categories }) => {
         'RIVAJ': '#f59e0b',
         'AMRIJ': '#a855f7',
         'RHD': '#ec4899',
+        'NO!MO!': '#10b981',
         'EVERNOYA': '#3b82f6',
-        'NO!MO!': '#10b981'
     };
 
     // Priority Order definition
-    const priorityOrder = ['RIVAJ', 'AMRIJ', 'RHD', 'EVERNOYA', 'NO!MO!'];
+    const priorityOrder = ['RIVAJ', 'AMRIJ', 'RHD', 'NO!MO!', 'EVERNOYA'];
 
     const sortedCategories = useMemo(() => {
         return [...categories].sort((a, b) => {
