@@ -122,12 +122,13 @@ const Sidebar = ({ open, toggleDrawer }) => {
               {[
                 { name: 'Attendance Report', path: '/attendance-report' },
                 { name: 'Daily Sales Report', path: '/sales-report' },
+                { name: 'Channel Sales Report', path: '/channelwisesummary-report' },
                 { name: 'Sale Summary Report', path: '/summary-report' },
                 { name: 'Short Items Report', path: '/short-items-report' },
                 { name: 'Interception Report', path: '/interception-report' },
                 { name: 'Short Tester Report', path: '/shorttester-report' },
                 { name: 'Expiry Stock Report', path: '/expirystock-report' },
-                { name: 'Channel Sales Report', path: '/channelwisesummary-report' },
+
 
               ].map((report) => (
                 <ListItemButton
