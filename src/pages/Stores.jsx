@@ -44,6 +44,7 @@ const Stores = () => {
     region_id: '',
     ba_user_id: '',
     ba_user_id_2: '',
+    ba_user_id_3: '',
     supervisor_id: '',
     channel_id: '',
     targets: ''
@@ -135,6 +136,7 @@ const Stores = () => {
         region_id: store.region_id || '',
         ba_user_id: store.ba_user_id || '',
         ba_user_id_2: store.ba_user_id_2 || '',
+        ba_user_id_3: store.ba_user_id_3 || '',
         supervisor_id: store.supervisor_id || '',
         targets: store.targets || '',
         channel_id: store.channel_id || '',
@@ -143,7 +145,7 @@ const Stores = () => {
 
       });
     } else {
-      setFormData({ store_name: '', area: '', city_id: '', region_id: '', ba_user_id: '', ba_user_id_2: '', supervisor_id: '', targets: '' });
+      setFormData({ store_name: '', area: '', city_id: '', region_id: '', ba_user_id: '', ba_user_id_2: '', ba_user_id_3: '', supervisor_id: '', targets: '' });
     }
     setOpen(true);
   };
@@ -163,6 +165,7 @@ const Stores = () => {
       // Baki IDs ke liye bhi safety check
       ba_user_id: formData.ba_user_id || null,
       ba_user_id_2: formData.ba_user_id_2 || null,
+      ba_user_id_3: formData.ba_user_id_3 || null,
       channel_id: formData.channel_id || null
     };
 
@@ -292,43 +295,26 @@ const Stores = () => {
                       {s.supervisor?.fullname || s.supervisor?.name || 'Unassigned'}
                     </Typography>
                   </TableCell>
-                  <TableCell sx={{ fontSize: '0.875rem' }}>
+                  <TableCell>
                     <Stack spacing={0.5}>
-                      {/* Primary BA: Sirf tab dikhega jab assigned ho */}
                       {s.beauty_advisor && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            bgcolor: '#e3f2fd',
-                            color: '#1976d2',
-                            px: 1, borderRadius: 1, fontWeight: 'bold',
-                            display: 'inline-block', width: 'fit-content'
-                          }}
-                        >
+                        <Typography variant="caption" sx={{ bgcolor: '#e3f2fd', color: '#1976d2', px: 1, borderRadius: 1, fontWeight: 'bold', width: 'fit-content' }}>
                           BA 1: {s.beauty_advisor.name}
                         </Typography>
                       )}
-
-                      {/* Secondary BA: Sirf tab dikhega jab assigned ho */}
                       {s.beauty_advisor_2 && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            bgcolor: '#fff3e0',
-                            color: '#e65100',
-                            px: 1, borderRadius: 1, fontWeight: 'bold',
-                            display: 'inline-block', width: 'fit-content'
-                          }}
-                        >
+                        <Typography variant="caption" sx={{ bgcolor: '#fff3e0', color: '#e65100', px: 1, borderRadius: 1, fontWeight: 'bold', width: 'fit-content' }}>
                           BA 2: {s.beauty_advisor_2.name}
                         </Typography>
                       )}
-
-                      {/* Agar dono assigned nahi hain, toh dash ya simple text */}
-                      {!s.beauty_advisor && !s.beauty_advisor_2 && (
-                        <Typography variant="caption" sx={{ color: '#757575', fontStyle: 'italic' }}>
-                          Unassigned
+                      {/* Added BA 3 Badge */}
+                      {s.beauty_advisor_3 && (
+                        <Typography variant="caption" sx={{ bgcolor: '#f1f8e9', color: '#33691e', px: 1, borderRadius: 1, fontWeight: 'bold', width: 'fit-content' }}>
+                          BA 3: {s.beauty_advisor_3.name}
                         </Typography>
+                      )}
+                      {!s.beauty_advisor && !s.beauty_advisor_2 && !s.beauty_advisor_3 && (
+                        <Typography variant="caption" sx={{ color: '#757575', fontStyle: 'italic' }}>Unassigned</Typography>
                       )}
                     </Stack>
                   </TableCell>
@@ -481,7 +467,7 @@ const Stores = () => {
               </Box>
 
               <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Primary BA</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>BA 1</Typography>
                 <TextField
                   select fullWidth size="small"
                   disabled={mode === 'view'}
@@ -494,18 +480,40 @@ const Stores = () => {
               </Box>
 
               <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Secondary BA</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>BA 2</Typography>
                 <TextField
                   select fullWidth size="small"
                   disabled={mode === 'view'}
                   value={formData.ba_user_id_2}
                   onChange={(e) => setFormData({ ...formData, ba_user_id_2: e.target.value })}
-                  InputProps={{ inputProps: { 'aria-label': 'Select Secondary Beauty Advisor' } }}
+                  InputProps={{ inputProps: { 'aria-label': 'Select BA 2' } }}
                 >
                   <MenuItem value=""><em>None</em></MenuItem>
                   {users.map(u => <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>)}
                 </TextField>
               </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>BA 3</Typography>
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  disabled={mode === 'view'}
+                  value={formData.ba_user_id_3}
+                  onChange={(e) => setFormData({ ...formData, ba_user_id_3: e.target.value })}
+                  InputProps={{ inputProps: { 'aria-label': 'Select BA 3' } }}
+                >
+                  <MenuItem value=""><em>None</em></MenuItem>
+                  {users.map((u) => (
+                    <MenuItem key={u.id} value={u.id}>
+                      {u.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Box>
+
+
               {/* ROW 3: Account Status for Edit/View */}
               {(mode === 'edit' || mode === 'view') && (
                 <Box sx={{ flex: 1 }}> {/* Alignment matching other rows */}
