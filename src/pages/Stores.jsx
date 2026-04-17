@@ -65,7 +65,7 @@ const Stores = () => {
 
   // 2. Fetch Dropdowns (Cities, Regions, Users)
   useEffect(() => {
-    let isMounted = true; // Memory leak aur double set se bachne ke liye
+    let isMounted = true;
 
     const fetchDropdowns = async () => {
       try {
@@ -231,18 +231,18 @@ const Stores = () => {
         </Typography>
 
         <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
-          <Paper sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400 }}>
+          <Paper sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 510 }}>
             <Search sx={{ p: 1, color: 'gray' }} />
             <TextField
               fullWidth
               size="small"
               variant="standard"
-              // Placeholder change karo taake user ko pata chale functionality kya hai
-              placeholder="Search by Store, Area, City, BA or Channel..."
+
+              placeholder="Search by Store Name, Area, City, BA , Supervisor and Channel..."
               InputProps={{
                 disableUnderline: true,
                 // Screen reader ke liye label lazmi hai
-                inputProps: { 'aria-label': 'Search stores by name, area, city, or advisor' }
+                inputProps: { 'aria-label': 'Search stores by name, area, city, supervisor , ba , channel ' }
               }}
               value={search}
               onChange={(e) => {
