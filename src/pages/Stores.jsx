@@ -234,10 +234,21 @@ const Stores = () => {
           <Paper sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400 }}>
             <Search sx={{ p: 1, color: 'gray' }} />
             <TextField
-              fullWidth size="small" variant="standard"
-              placeholder="Search by store name..."
-              InputProps={{ disableUnderline: true }}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              fullWidth
+              size="small"
+              variant="standard"
+              // Placeholder change karo taake user ko pata chale functionality kya hai
+              placeholder="Search by Store, Area, City, BA or Channel..."
+              InputProps={{
+                disableUnderline: true,
+                // Screen reader ke liye label lazmi hai
+                inputProps: { 'aria-label': 'Search stores by name, area, city, or advisor' }
+              }}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1); // Ye bohot zaroori hai, taake results page 1 se shuru hon
+              }}
             />
           </Paper>
           {(userRole === 'admin' || userRole === 'ccadmin') && (
@@ -299,18 +310,18 @@ const Stores = () => {
                     <Stack spacing={0.5}>
                       {s.beauty_advisor && (
                         <Typography variant="caption" sx={{ bgcolor: '#e3f2fd', color: '#1976d2', px: 1, borderRadius: 1, fontWeight: 'bold', width: 'fit-content' }}>
-                          BA 1: {s.beauty_advisor.name}
+                          BA 1: {s.beauty_advisor.fullname}
                         </Typography>
                       )}
                       {s.beauty_advisor_2 && (
                         <Typography variant="caption" sx={{ bgcolor: '#fff3e0', color: '#e65100', px: 1, borderRadius: 1, fontWeight: 'bold', width: 'fit-content' }}>
-                          BA 2: {s.beauty_advisor_2.name}
+                          BA 2: {s.beauty_advisor_2.fullname}
                         </Typography>
                       )}
                       {/* Added BA 3 Badge */}
                       {s.beauty_advisor_3 && (
                         <Typography variant="caption" sx={{ bgcolor: '#f1f8e9', color: '#33691e', px: 1, borderRadius: 1, fontWeight: 'bold', width: 'fit-content' }}>
-                          BA 3: {s.beauty_advisor_3.name}
+                          BA 3: {s.beauty_advisor_3.fullname}
                         </Typography>
                       )}
                       {!s.beauty_advisor && !s.beauty_advisor_2 && !s.beauty_advisor_3 && (
