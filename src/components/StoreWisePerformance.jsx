@@ -73,7 +73,7 @@ const StoreWisePerformance = ({ data = [] }) => {
                                     </Typography>
                                 </TableCell>
                                 <TableCell align="right" sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
-                                    Rs {formatCompactNumber(Math.round(row.revenue))}
+                                    Rs {formatCompactNumber((row.revenue))}
                                 </TableCell>
                                 <TableCell align="right" sx={{ fontSize: '0.75rem' }}>
                                     {row.items}

@@ -17,7 +17,7 @@ const ExpiredStockPerformance = ({ responseData }) => {
     return (
         <Paper elevation={0} sx={{
             p: 2, borderRadius: '16px', border: '1px solid #eef2f6',
-            bgcolor: '#fff', height: '420px', width: '490px', display: 'flex', flexDirection: 'column'
+            bgcolor: '#fff', height: '470px', width: '490px', display: 'flex', flexDirection: 'column'
         }}>
             {/* Header: Synchronized with ShortItems */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -45,7 +45,7 @@ const ExpiredStockPerformance = ({ responseData }) => {
                         sx={{ bgcolor: '#ffebee', color: '#d32f2f', fontWeight: 800, borderRadius: '4px', height: '18px', fontSize: '0.6rem' }}
                     />
                     <Typography sx={{ color: '#90a4ae', fontSize: '0.6rem', fontWeight: 700, mt: 0.2, display: 'block' }}>
-                        Central: {summary.totalUnits || 0}
+                        Alerts: {summary.totalReports || 0}
                     </Typography>
                 </Box>
             </Box>

@@ -38,6 +38,9 @@ const Dashboard = () => {
     const [shortItemsData, setShortItemsData] = useState({ summary: {}, data: [] });
     const [expiryStockData, setExpiryStockData] = useState({ summary: {}, data: [] });
 
+    // Latest 7 dates ka data
+    const latestTrendData = trendData.slice(-7);
+
 
 
     const fetchDashboardData = useCallback(async () => {
@@ -92,7 +95,15 @@ const Dashboard = () => {
     };
 
     return (
-        <Box sx={{ p: 3, bgcolor: '#f4f7f9', minHeight: '100vh', overflowX: 'hidden' }}>
+        <Box sx={{
+            p: { xs: 2, md: 3 }, // Choti screen par kam padding
+            bgcolor: '#f4f7f9',
+            minHeight: '100vh',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            boxSizing: 'border-box'
+        }}>
 
             {/* --- TUMHARA ORIGINAL HEADER --- */}
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
@@ -128,7 +139,7 @@ const Dashboard = () => {
                         </Stack>
                     </Paper>
 
-                    <Tooltip title="Reset to Weekly">
+                    <Tooltip title="Reset to Monthly">
                         <IconButton
                             onClick={handleReset}
                             sx={{
@@ -188,41 +199,34 @@ const Dashboard = () => {
                 >
                     <Grid container spacing={3}>
 
-                        {/* LEFT CHART: Sales Trend (Occupies 8/12 grid space on desktop) */}
-                        <Grid item xs={12} lg={8}>
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: '20px',
-                                    border: '1px solid #eef2f6',
-                                    bgcolor: '#fff',
-                                    width: '641px',
-                                    height: '420px', // Fixed height taake layout shrink na ho
-                                    display: 'flex',
-                                    flexDirection: 'column'
-                                }}
-                            >
-                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a203e' }}>
+                        {/* ROW 1: Category + Sales Trend */}
+                        <Grid item xs={12} md={4} lg={4}>
+                            {categoryData && <CategoryPerformance responseData={categoryData} />}
+                        </Grid>
+
+                        <Grid item xs={12} md={8} lg={8}>
+                            <Paper elevation={0} sx={{
+                                p: { xs: 2, md: 3 },
+                                borderRadius: '20px',
+                                bgcolor: '#fff',
+                                height: '470px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                                     Sales Trend by Brand
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: '#90a4ae', mb: 3 }}>
-                                    Daily revenue across all brands
-                                </Typography>
-
-                                {/* Chart Container */}
-                                <Box sx={{ flexGrow: 1, minHeight: 0, width: '100%' }}>
-                                    <SalesTrendChart data={trendData} categories={categories} />
+                                <Box sx={{ mt: 2, width:'650px' , minWidth: 0 }}>
+                                    <SalesTrendChart data={latestTrendData} categories={categories} />
                                 </Box>
                             </Paper>
                         </Grid>
 
-                        {/* RIGHT CHART: Region-wise Sales (Occupies 4/12 grid space on desktop) */}
-                        {/* RIGHT CHART SECTION MEIN YEH CHANGE KARO */}
-                        <Grid item xs={12} lg={4}>
+                        {/* ROW 2: Region-wise + Store Performance */}
+                        <Grid item xs={12} md={4} lg={4} sx={{ minWidth: 0 }}>
                             <Paper elevation={0} sx={{
                                 p: 3, borderRadius: '20px', border: '1px solid #eef2f6',
-                                bgcolor: '#fff', width: '350px', height: '420px',
+                                bgcolor: '#fff', width: '269px', height: '470px',
                                 display: 'flex', flexDirection: 'column'
                             }}>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a203e' }}>
@@ -231,51 +235,32 @@ const Dashboard = () => {
                                 <Typography variant="caption" sx={{ color: '#90a4ae', mb: 3 }}>
                                     Revenue distribution by region
                                 </Typography>
-
                                 <Box sx={{ flexGrow: 1, minHeight: 0 }}>
                                     <RegionSalesChart data={regionData} />
                                 </Box>
                             </Paper>
                         </Grid>
 
-
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={4} lg={4}>
-                                {categoryData && <CategoryPerformance responseData={categoryData} />}
-                            </Grid>
-                            <Grid item xs={12} md={8} lg={8}> {/* MD use karo for better flexibility */}
-                                <StoreWisePerformance data={storePerformance} />
-                            </Grid>
-
+                        <Grid item xs={12} md={8} lg={8} sx={{ minWidth: 0 }}>
+                            <StoreWisePerformance data={storePerformance} />
                         </Grid>
 
-
-                        {/* Inside your Dashboard return, after the first Row of charts */}
-                        <Grid container spacing={3} sx={{ mt: 1 }}>
-
-                            {/* Short Items Card - 6 Columns */}
-                            <Grid item xs={12} lg={6}>
-                                <ShortItemsPerformance responseData={shortItemsData} />
-                            </Grid>
-
-                            {/* You can put another component here for the remaining 6 columns */}
-                            <Grid item xs={12} lg={6}>
-                                <ExpiredStockPerformance responseData={expiryStockData} />
-                            </Grid>
-
+                        {/* ROW 3: Short Items + Expired Stock */}
+                        <Grid item xs={12} lg={6}>
+                            <ShortItemsPerformance responseData={shortItemsData} />
                         </Grid>
 
+                        <Grid item xs={12} lg={6}>
+                            <ExpiredStockPerformance responseData={expiryStockData} />
+                        </Grid>
 
                     </Grid>
 
-
-
-
-
                 </Box>
-            )}
+            )
+            }
 
-        </Box>
+        </Box >
     );
 };
 

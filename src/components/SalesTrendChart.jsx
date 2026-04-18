@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 
 const SalesTrendChart = ({ data, categories }) => {
+
     const brandColors = {
         'RIVAJ': '#f59e0b',
         'AMRIJ': '#a855f7',
@@ -14,7 +15,6 @@ const SalesTrendChart = ({ data, categories }) => {
         'EVERNOYA': '#3b82f6',
     };
 
-    // Priority Order definition
     const priorityOrder = ['RIVAJ', 'AMRIJ', 'RHD', 'NO!MO!', 'EVERNOYA'];
 
     const sortedCategories = useMemo(() => {
@@ -23,15 +23,14 @@ const SalesTrendChart = ({ data, categories }) => {
         });
     }, [categories]);
 
-    // Legend ko force karne ke liye manual payload banaya
-    const legendPayload = useMemo(() => {
-        return sortedCategories.map(brand => ({
-            value: brand,
-            type: 'circle',
-            id: brand,
-            color: brandColors[brand] || '#cbd5e1'
-        }));
-    }, [sortedCategories]);
+    const barSize = useMemo(() => {
+        if (!data) return 12;
+        const count = data.length;
+        if (count <= 7) return 20;
+        if (count <= 14) return 14;
+        if (count <= 21) return 10;
+        return 7;
+    }, [data]);
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('en-US', {
@@ -46,12 +45,12 @@ const SalesTrendChart = ({ data, categories }) => {
     );
 
     return (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={320}>
             <BarChart
-                // IMPORTANT: Key badalne se chart re-render force hoga
-                key={`force-refresh-${sortedCategories.join('')}`} // Is se pura chart re-mount hoga
                 data={data}
                 margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                barCategoryGap="50%"
+                barGap={2}
             >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
@@ -79,43 +78,38 @@ const SalesTrendChart = ({ data, categories }) => {
                     }}
                 />
                 <Legend
-                    content={(props) => {
-                        // Hum props ki bajaye apni sortedCategories use karenge
-                        return (
-                            <ul style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                gap: '20px',
-                                listStyle: 'none',
-                                padding: 0,
-                                marginTop: '20px',
-                                fontSize: '11px',
-                                fontWeight: 700
-                            }}>
-                                {sortedCategories.map((brand) => (
-                                    <li key={`legend-${brand}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <div style={{
-                                            width: '10px',
-                                            height: '10px',
-                                            borderRadius: '50%',
-                                            backgroundColor: brandColors[brand]
-                                        }} />
-                                        <span style={{ color: '#64748b' }}>{brand}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        );
-                    }}
+                    content={() => (
+                        <ul style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: '20px',
+                            listStyle: 'none',
+                            padding: 0,
+                            marginTop: '20px',
+                            fontSize: '11px',
+                            fontWeight: 700
+                        }}>
+                            {sortedCategories.map((brand) => (
+                                <li key={`legend-${brand}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <div style={{
+                                        width: '10px',
+                                        height: '10px',
+                                        borderRadius: '50%',
+                                        backgroundColor: brandColors[brand]
+                                    }} />
+                                    <span style={{ color: '#64748b' }}>{brand}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 />
-
                 {sortedCategories.map((brand) => (
                     <Bar
                         key={brand}
                         dataKey={brand}
                         fill={brandColors[brand] || '#cbd5e1'}
                         radius={[3, 3, 0, 0]}
-                        barSize={12}
-                        // Animation active rakhen taake render order saaf nazar aaye
+                        barSize={barSize}
                         isAnimationActive={true}
                     />
                 ))}

@@ -279,7 +279,7 @@ const ChannelWiseSummaryReport = () => {
                                                                 fontSize: '11px', verticalAlign: 'middle',
                                                                 borderRight: '1px solid #e0e0e0'
                                                             }}>
-                                                            {row.rowDate ? format(parseISO(row.rowDate), 'dd/MM') : '-'}
+                                                            {row.rowDate ? format(parseISO(row.rowDate), 'MMM dd') : '-'}
                                                         </TableCell>
                                                     )}
                                                     <TableCell sx={{ fontSize: '11px' }}>{row.city}</TableCell>

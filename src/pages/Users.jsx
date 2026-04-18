@@ -136,8 +136,15 @@ const Users = () => {
             return alert("Error: User Name, Full Name, and Phone are mandatory!");
         }
 
+        // Password Validation: 
+        // ADD: Must exist and >= 6
+        // EDIT: If provided, must be >= 6
         if (mode === 'add' && (!formData.password || formData.password.length < 6)) {
             return alert("Error: Password is required and must be at least 6 characters long.");
+        }
+
+        if (mode === 'edit' && formData.password && formData.password.length < 6) {
+            return alert("Error: New password must be at least 6 characters long.");
         }
 
         // --- DATA CLEANING (Ensuring Sequelize Compatibility) ---
@@ -276,7 +283,7 @@ const Users = () => {
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>City</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>Region</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 }}>ReportTo</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5 , textAlign:'center'}}>Status</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold', py: 1.5, textAlign: 'center' }}>Status</TableCell>
                             <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center', py: 1.5 }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -479,21 +486,23 @@ const Users = () => {
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             />
                         </Box>
-                        <Box sx={{ flex: 1 }}>
-                            {mode === 'add' ? (
-                                <>
-                                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Account Password</Typography>
-                                    <TextField
-                                        fullWidth size="small" type="password" placeholder="Set password"
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    />
-                                </>
-                            ) : (
-                                /* Empty space to keep alignment if not in Add mode */
-                                <Box sx={{ flex: 1 }} />
-                            )}
-                        </Box>
+                        {/* Password Field: Visible in Add and Edit modes */}
+                        {(mode === 'add' || mode === 'edit') && (
+                            <Box sx={{ flex: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                    {mode === 'edit' ? 'Reset Password' : 'Account Password'}
+                                </Typography>
+                                <TextField
+                                    fullWidth size="small"
+                                    type="password"
+                                    placeholder={mode === 'edit' ? "Leave blank to keep current" : "Set password"}
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    // A11y Audit: Screen reader ko pata chalna chahiye ye kya hai
+                                    inputProps={{ 'aria-label': 'password field' }}
+                                />
+                            </Box>
+                        )}
 
                         {(mode === 'edit' || mode === 'view') && (
                             <Box sx={{ flex: 1 }}>
