@@ -248,7 +248,7 @@ const AttendanceReport = () => {
 
                     {/* Absent Box */}
                     <Box>
-                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Absent</Typography>
+                        <Typography variant="caption" sx={{ color: '#aaa', display: 'block', lineHeight: 1, fontSize: '0.65rem' }}>Leave</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ff5252' }}>{summary.absent}</Typography>
                         <Typography variant="caption" sx={{ display: 'block', color: '#ff5252', fontSize: '0.65rem', mt: -0.3 }}>({summary.absentPercentage})</Typography>
                     </Box>
@@ -323,7 +323,7 @@ const AttendanceReport = () => {
                             <TextField select fullWidth size="small" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
                                 <MenuItem value="">Both</MenuItem>
                                 <MenuItem value="present">Present</MenuItem>
-                                <MenuItem value="absent">Absent</MenuItem>
+                                <MenuItem value="absent">Leave</MenuItem>
                             </TextField>
                         </Box>
 
@@ -405,10 +405,14 @@ const AttendanceReport = () => {
                                         <TableCell align="center" sx={{ color: '#ab1d47', fontWeight: 'bold' }}>{row.time || '00:00'}</TableCell>
                                         <TableCell align="center">
                                             <Chip
-                                                label={row.attendance}
+                                                // Logic: Agar 'Present' hai toh 'Present', warna hamesha 'Leave' dikhao
+                                                label={row.attendance === 'Present' ? 'Present' : 'Leave'}
                                                 size="small"
                                                 sx={{
-                                                    height: '22px', fontSize: '0.75rem', fontWeight: 'bold',
+                                                    height: '22px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 'bold',
+                                                    // Colors bhi automatically 'Leave' ke liye red ho jayenge
                                                     bgcolor: row.attendance === 'Present' ? '#e8f5e9' : '#ffebee',
                                                     color: row.attendance === 'Present' ? '#2e7d32' : '#c62828'
                                                 }}

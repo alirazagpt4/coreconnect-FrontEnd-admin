@@ -1,8 +1,12 @@
 import React from 'react';
 import { Box, Typography, Paper, Chip, Divider } from '@mui/material';
 import { ErrorOutline as ExpiryIcon } from '@mui/icons-material';
+import { useSidebar } from '../context/SideBarContext';
 
 const ExpiredStockPerformance = ({ responseData }) => {
+     const { open } = useSidebar();
+        const expiryWidth = open ? 490 : 570;
+
     const brandColors = {
         'AMRIJ': '#a855f7',
         'RHD': '#ec4899',
@@ -17,7 +21,7 @@ const ExpiredStockPerformance = ({ responseData }) => {
     return (
         <Paper elevation={0} sx={{
             p: 2, borderRadius: '16px', border: '1px solid #eef2f6',
-            bgcolor: '#fff', height: '470px', width: '490px', display: 'flex', flexDirection: 'column'
+            bgcolor: '#fff', height: '470px', width: `${expiryWidth}px`, display: 'flex', flexDirection: 'column'
         }}>
             {/* Header: Synchronized with ShortItems */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>

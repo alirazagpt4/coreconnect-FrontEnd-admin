@@ -4,18 +4,18 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
-
+import { useSidebar } from '../context/SideBarContext.jsx';
 const Layout = () => {
-  const [open, setOpen] = React.useState(true); // Sidebar state
+  // const [open, setOpen] = React.useState(true); // Sidebar state
 
-  const toggleDrawer = () => setOpen(!open);
-
+  // const toggleDrawer = () => setOpen(!open);
+  const { open, toggleDrawer } = useSidebar();
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f8f9fa' }}>
       <CssBaseline />
 
       {/* Sidebar ko open state pass karein */}
-      <Sidebar open={open} />
+      <Sidebar open={open} toggleDrawer={toggleDrawer} />
 
       <Box sx={{
         flexGrow: 1,

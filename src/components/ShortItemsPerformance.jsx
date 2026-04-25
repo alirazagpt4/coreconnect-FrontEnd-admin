@@ -2,8 +2,11 @@ import React, { useMemo } from 'react';
 import { Box, Typography, Paper, Chip, Divider } from '@mui/material';
 import { Inventory2Outlined as ShortItemsIcon } from '@mui/icons-material';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-
+import { useSidebar } from '../context/SideBarContext';
 const ShortItemsPerformance = ({ responseData }) => {
+     const { open } = useSidebar();
+        const shortItemWidth = open ? 490 : 570;
+    
     const brandColors = {
         'AMRIJ': '#a855f7',
         'RHD': '#ec4899',
@@ -35,7 +38,7 @@ const ShortItemsPerformance = ({ responseData }) => {
     return (
         <Paper elevation={0} sx={{
             p: 2, borderRadius: '16px', border: '1px solid #eef2f6',
-            bgcolor: '#fff', height: '470px', width: '490px', display: 'flex', flexDirection: 'column'
+            bgcolor: '#fff', height: '470px', width: `${shortItemWidth}px`, display: 'flex', flexDirection: 'column'
         }}>
             {/* Header: Compact & Complete */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>

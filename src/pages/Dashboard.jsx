@@ -16,7 +16,8 @@ import CategoryPerformance from '../components/CategoryPerformance';
 import StoreWisePerformance from '../components/StoreWisePerformance.jsx';
 import ShortItemsPerformance from '../components/ShortItemsPerformance.jsx';
 import ExpiredStockPerformance from '../components/ExpiryStockPerformance.jsx';
-import { formatCompactNumber } from "../utils/formatter.js"
+import { formatCompactNumber } from "../utils/formatter.js";
+import { useSidebar } from '../context/SideBarContext.jsx';
 
 const Dashboard = () => {
     const initialCustomDates = {
@@ -28,6 +29,9 @@ const Dashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [customDates, setCustomDates] = useState(initialCustomDates);
+
+    const { open } = useSidebar();
+    const chartWidth = open ? 638 : 800;
 
     // Naya state charts ke data ke liye (API aane tak empty array rakh sakte ho)
     const [trendData, setTrendData] = useState([]);
@@ -212,11 +216,32 @@ const Dashboard = () => {
                                 height: '470px',
                                 display: 'flex',
                                 flexDirection: 'column',
+                                overflow: 'hidden'
                             }}>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                                     Sales Trend by Brand
                                 </Typography>
-                                <Box sx={{ mt: 2, width:'650px' , minWidth: 0 }}>
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color: '#90a4ae', // Greyish blue color [cite: 2026-03-12]
+                                        fontWeight: 500,
+                                        display: 'block',
+                                        mt: 0.5, // Thora sa gap top se
+                                        letterSpacing: '0.3px'
+                                    }}
+                                >
+                                    Daily revenue across all brands
+                                </Typography>
+                                <Box sx={{
+                                    mt: 2, width: `${chartWidth}px`, // Dynamic width applied
+                                    transition: 'max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    minWidth: 0,
+                                    overflow: 'hidden',
+                                    mx: 'auto',
+                                    display: 'flex',
+                                    justifyContent: 'center'
+                                }}>
                                     <SalesTrendChart data={latestTrendData} categories={categories} />
                                 </Box>
                             </Paper>
@@ -226,7 +251,7 @@ const Dashboard = () => {
                         <Grid item xs={12} md={4} lg={4} sx={{ minWidth: 0 }}>
                             <Paper elevation={0} sx={{
                                 p: 3, borderRadius: '20px', border: '1px solid #eef2f6',
-                                bgcolor: '#fff', width: '269px', height: '470px',
+                                bgcolor: '#fff', width: '335px', height: '470px',
                                 display: 'flex', flexDirection: 'column'
                             }}>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a203e' }}>

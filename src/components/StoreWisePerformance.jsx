@@ -5,16 +5,19 @@ import {
 } from '@mui/material';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import { formatCompactNumber } from "../utils/formatter.js";
+import { useSidebar } from '../context/SideBarContext.jsx';
 
 // Step 1: Accept the "data" prop from parent
 const StoreWisePerformance = ({ data = [] }) => {
+    const { open } = useSidebar();
+    const chartWidth = open ? 638 : 800;
     return (
         <Card sx={{
             borderRadius: 4,
             p: 3,
             boxShadow: '0px 4px 20px rgba(0,0,0,0.05)',
             height: '470px', // Match other dashboard charts height
-            width: '712px',
+            width: `${chartWidth}px`,
             display: 'flex',
             flexDirection: 'column',
             bgcolor: '#fff'
