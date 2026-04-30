@@ -96,6 +96,69 @@ const ChannelWiseSummaryReport = () => {
         fetchInitialData();
     }, []);
 
+
+
+    const getFormattedDataForExcel = () => {
+        let excelRows = [];
+
+        groupedByChannel.forEach((group) => {
+            // 1. Channel Header Row
+            excelRows.push({
+                "Date": `CHANNEL: ${group.channelName.toUpperCase()}`,
+                "City": "", "Store": "", "BA": "",
+                "AMRIJ Qty": "", "AMRIJ Val": "",
+                "EVERNOYA Qty": "", "EVERNOYA Val": "",
+                "NO!MO! Qty": "", "NO!MO! Val": "",
+                "RHD Qty": "", "RHD Val": "",
+                "RIVAJ Qty": "", "RIVAJ Val": "",
+                "TOTAL Qty": "", "TOTAL Val": ""
+            });
+
+            // 2. Main Data Rows
+            group.allRows.forEach((row) => {
+                excelRows.push({
+                    "Date": row.rowDate || '-',
+                    "City": row.city || '',
+                    "Store": row.storeName || '',
+                    "BA": row.baName || '',
+                    "AMRIJ Qty": Math.round(row.brands?.AMRIJ?.qty || 0),
+                    "AMRIJ Val": Math.round(row.brands?.AMRIJ?.val || 0),
+                    "EVERNOYA Qty": Math.round(row.brands?.EVERNOYA?.qty || 0),
+                    "EVERNOYA Val": Math.round(row.brands?.EVERNOYA?.val || 0),
+                    "NO!MO! Qty": Math.round(row.brands?.['NO!MO!']?.qty || 0),
+                    "NO!MO! Val": Math.round(row.brands?.['NO!MO!']?.val || 0),
+                    "RHD Qty": Math.round(row.brands?.RHD?.qty || 0),
+                    "RHD Val": Math.round(row.brands?.RHD?.val || 0),
+                    "RIVAJ Qty": Math.round(row.brands?.RIVAJ?.qty || 0),
+                    "RIVAJ Val": Math.round(row.brands?.RIVAJ?.val || 0),
+                    "TOTAL Qty": Math.round(row.storeTotalQty || 0),
+                    "TOTAL Val": Math.round(row.storeTotalVal || 0)
+                });
+            });
+
+            // 3. Subtotal Row (AB YAHAN SAARE BRANDS ADD HAIN)
+            excelRows.push({
+                "Date": "", "City": "", "Store": "",
+                "BA": `${group.channelName.toUpperCase()} TOTAL:`,
+                "AMRIJ Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.AMRIJ?.qty) || 0), 0),
+                "AMRIJ Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.AMRIJ?.val) || 0), 0),
+                "EVERNOYA Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.EVERNOYA?.qty) || 0), 0),
+                "EVERNOYA Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.EVERNOYA?.val) || 0), 0),
+                "NO!MO! Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.['NO!MO!']?.qty) || 0), 0),
+                "NO!MO! Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.['NO!MO!']?.val) || 0), 0),
+                "RHD Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.RHD?.qty) || 0), 0),
+                "RHD Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.RHD?.val) || 0), 0),
+                "RIVAJ Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.RIVAJ?.qty) || 0), 0),
+                "RIVAJ Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.RIVAJ?.val) || 0), 0),
+                "TOTAL Qty": group.allRows.reduce((s, r) => s + (Number(r.storeTotalQty) || 0), 0),
+                "TOTAL Val": group.allRows.reduce((s, r) => s + (Number(r.storeTotalVal) || 0), 0)
+            });
+        });
+
+        return excelRows;
+    };
+
+
     const handleGenerateReport = async () => {
         setLoading(true);
         const cleanFilters = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ""));
@@ -185,8 +248,13 @@ const ChannelWiseSummaryReport = () => {
                         sx={{ bgcolor: '#ab1d47', height: '36px', fontWeight: 'bold', fontSize: '11px', minWidth: '90px', whiteSpace: 'nowrap' }}>
                         GENERATE
                     </Button>
-                    <Button variant="contained" color="success" onClick={() => handleExportToExcel(rawReportData, 'Report')} size="small"
-                        sx={{ height: '36px', fontWeight: 'bold', fontSize: '11px', minWidth: '80px', whiteSpace: 'nowrap' }}>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => handleExportToExcel(getFormattedDataForExcel(), 'Channel_Sales_Report')}
+                        size="small"
+                        sx={{ height: '36px', fontWeight: 'bold', fontSize: '11px', minWidth: '80px', whiteSpace: 'nowrap' }}
+                    >
                         <FileDownload sx={{ fontSize: '16px', mr: 0.5 }} /> EXCEL
                     </Button>
                 </Box>
