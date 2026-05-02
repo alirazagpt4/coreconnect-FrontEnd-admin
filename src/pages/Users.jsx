@@ -14,6 +14,7 @@ const ROLES = [
     { value: 'ccadmin', label: 'CC Admin' },
     { value: 'brandadmin', label: 'Brand Admin' },
     { value: 'supervisor', label: 'Supervisor' },
+    { value: 'auditor', label: 'Auditor' },
     { value: 'user', label: 'User' }
 ];
 

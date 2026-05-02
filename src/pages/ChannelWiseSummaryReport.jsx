@@ -18,11 +18,12 @@ const ChannelWiseSummaryReport = () => {
     const [channels, setChannels] = useState([]);
     const [stores, setStores] = useState([]);
     const [users, setUsers] = useState([]);
+    const [areas, setAreas] = useState([]);
 
     const [filters, setFilters] = useState({
         fromDate: format(new Date(), 'yyyy-MM-dd'),
         toDate: format(new Date(), 'yyyy-MM-dd'),
-        city_id: '', store_id: '', ba_id: '', channel_id: ''
+        city_id: '', store_id: '', area: '', channel_id: ''
     });
 
     const brands = ["AMRIJ", "EVERNOYA", "NO!MO!", "RHD", "RIVAJ"];
@@ -81,20 +82,24 @@ const ChannelWiseSummaryReport = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [c, s, u, ch] = await Promise.all([
+                const [c, s, u, ch, a] = await Promise.all([
                     API.get('/cities'),
                     API.get('/store?limit=1000'),
                     API.get('/users?limit=1000'),
-                    API.get('/channels/getchannels')
+                    API.get('/channels/getchannels'),
+                    API.get('/store/areas')
                 ]);
                 setCities(c.data);
                 setStores(s.data.stores || []);
                 setUsers(u.data.users.filter(user => user.designation?.name === "BA"));
                 setChannels(ch.data || []);
+                console.log("areasssss : ", a.data.areas)
+                setAreas(a.data.areas || []);
             } catch (err) { console.error(err); }
         };
         fetchInitialData();
     }, []);
+
 
 
 
@@ -161,13 +166,27 @@ const ChannelWiseSummaryReport = () => {
 
     const handleGenerateReport = async () => {
         setLoading(true);
-        const cleanFilters = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ""));
         try {
-            const res = await API.get(`/reports/summary-report-by-channels`, { params: cleanFilters });
+            // Encode each filter value to handle spaces and special chars like "NO!MO!"
+            const encodedFilters = {};
+            Object.keys(filters).forEach(key => {
+                if (filters[key]) {
+                    encodedFilters[key] = encodeURIComponent(filters[key]);
+                }
+            });
+
+            // Axios typically does this, but manual encoding ensures 100% safety
+            const res = await API.get(`/reports/summary-report-by-channels`, {
+                params: encodedFilters
+            });
+
             setRawReportData(res.data.data || []);
             setSummary(res.data.summary || null);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+        } catch (err) {
+            console.error("Report Error:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -237,11 +256,21 @@ const ChannelWiseSummaryReport = () => {
                             .map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
                     </TextField>
 
-                    <TextField select label="BA" size="small" value={filters.ba_id}
-                        onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })}
-                        sx={inputStyle}>
-                        <MenuItem value="">All BAs</MenuItem>
-                        {users.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
+                    <TextField
+                        select
+                        label="Area"
+                        value={filters.area}
+                        onChange={(e) => setFilters({ ...filters, area: e.target.value })}
+                        size="small"
+                        sx={inputStyle}
+                    >
+                        <MenuItem value="">All Areas</MenuItem>
+                        {areas.map((areaName, index) => (
+                            // Agar 'areaName' khud string hai, toh usay hi value aur label ke liye use karein
+                            <MenuItem key={index} value={areaName}>
+                                {areaName}
+                            </MenuItem>
+                        ))}
                     </TextField>
 
                     <Button variant="contained" onClick={handleGenerateReport} disabled={loading} size="small"

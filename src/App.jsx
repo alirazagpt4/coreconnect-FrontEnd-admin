@@ -17,9 +17,12 @@ import InterceptionReport from './pages/InterceptionReport';
 import ExpiryStockReport from './pages/ExpiryStockReport';
 import ShortTestersReport from './pages/ShortTestersReport';
 import ChannelWiseSummaryReport from './pages/ChannelWiseSummaryReport';
+
 function App() {
   // AuthContext se token nikalna taake check kar sakein banda login hai ya nahi
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
+  const userRole = user?.role ? String(user.role).toLowerCase().trim() : '';
+  console.log("Current User Role:", userRole);
 
   return (
     <Router>
@@ -39,7 +42,14 @@ function App() {
           <Route index element={<Navigate to="/dashboard" />} />
 
           {/* Main Pages jo Layout (Header+Sidebar) ke andar render honge */}
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={
+              (userRole === 'admin' || userRole === 'ccadmin' || userRole === 'brandadmin')
+                ? <Dashboard />
+                : <Navigate to="/attendance-report" /> // Auditor ko seedha report par bhejo
+            }
+          />
           <Route path="users" element={<Users />} />
 
           <Route path="stores" element={<Stores />} />
@@ -49,9 +59,9 @@ function App() {
           <Route path="summary-report" element={<SummaryReport />} />
           <Route path="short-items-report" element={<ShortItemsReport />} />
           <Route path="interception-report" element={<InterceptionReport />} />
-          <Route path="expirystock-report" element={<ExpiryStockReport/>}/>
-          <Route path="shorttester-report" element={<ShortTestersReport/>}/>
-          <Route path="channelwisesummary-report" element={<ChannelWiseSummaryReport/>}/>
+          <Route path="expirystock-report" element={<ExpiryStockReport />} />
+          <Route path="shorttester-report" element={<ShortTestersReport />} />
+          <Route path="channelwisesummary-report" element={<ChannelWiseSummaryReport />} />
 
 
 

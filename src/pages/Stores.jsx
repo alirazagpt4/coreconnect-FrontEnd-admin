@@ -331,7 +331,7 @@ const Stores = () => {
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.875rem' }}>
                     <Typography variant="caption" sx={{ bgcolor: '#f3e5f5', color: '#7b1fa2', px: 1, borderRadius: 1, fontWeight: 'bold' }}>
-                      {s.channel?.name || 'General'}
+                      {s.channel?.name || 'N/A'}
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.85rem' }}>
