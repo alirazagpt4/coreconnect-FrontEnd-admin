@@ -108,56 +108,58 @@ const ChannelWiseSummaryReport = () => {
 
         groupedByChannel.forEach((group) => {
             // 1. Channel Header Row
-            excelRows.push({
-                "Date": `CHANNEL: ${group.channelName.toUpperCase()}`,
-                "City": "", "Store": "", "BA": "",
-                "AMRIJ Qty": "", "AMRIJ Val": "",
-                "EVERNOYA Qty": "", "EVERNOYA Val": "",
-                "NO!MO! Qty": "", "NO!MO! Val": "",
-                "RHD Qty": "", "RHD Val": "",
-                "RIVAJ Qty": "", "RIVAJ Val": "",
-                "TOTAL Qty": "", "TOTAL Val": ""
+            const headerRow = {
+                "DATE": `CHANNEL: ${group.channelName.toUpperCase()}`,
+                "CITY": "",
+                "STORE": "",
+                "AREA": "", // ✅ Area column specifically added
+                "BA": "",
+            };
+            brands.forEach(b => {
+                headerRow[`${b} QTY`] = "";
+                headerRow[`${b} VAL`] = "";
             });
+            headerRow["TOTAL QTY"] = "";
+            headerRow["TOTAL VAL"] = "";
+            excelRows.push(headerRow);
 
             // 2. Main Data Rows
             group.allRows.forEach((row) => {
-                excelRows.push({
-                    "Date": row.rowDate || '-',
-                    "City": row.city || '',
-                    "Store": row.storeName || '',
-                    "BA": row.baName || '',
-                    "AMRIJ Qty": Math.round(row.brands?.AMRIJ?.qty || 0),
-                    "AMRIJ Val": Math.round(row.brands?.AMRIJ?.val || 0),
-                    "EVERNOYA Qty": Math.round(row.brands?.EVERNOYA?.qty || 0),
-                    "EVERNOYA Val": Math.round(row.brands?.EVERNOYA?.val || 0),
-                    "NO!MO! Qty": Math.round(row.brands?.['NO!MO!']?.qty || 0),
-                    "NO!MO! Val": Math.round(row.brands?.['NO!MO!']?.val || 0),
-                    "RHD Qty": Math.round(row.brands?.RHD?.qty || 0),
-                    "RHD Val": Math.round(row.brands?.RHD?.val || 0),
-                    "RIVAJ Qty": Math.round(row.brands?.RIVAJ?.qty || 0),
-                    "RIVAJ Val": Math.round(row.brands?.RIVAJ?.val || 0),
-                    "TOTAL Qty": Math.round(row.storeTotalQty || 0),
-                    "TOTAL Val": Math.round(row.storeTotalVal || 0)
+                const dataRow = {
+                    "DATE": row.rowDate || '-',
+                    "CITY": row.city || '',
+                    "STORE": row.storeName || '',
+                    "AREA": row.area || '', // ✅ Sequence set: Store ke baad Area
+                    "BA": row.baName || '',  // ✅ Area ke baad BA
+                };
+
+                // Dynamic Brand Columns
+                brands.forEach(b => {
+                    dataRow[`${b} QTY`] = Math.round(row.brands?.[b]?.qty || 0);
+                    dataRow[`${b} VAL`] = Math.round(row.brands?.[b]?.val || 0);
                 });
+
+                dataRow["TOTAL QTY"] = Math.round(row.storeTotalQty || 0);
+                dataRow["TOTAL VAL"] = Math.round(row.storeTotalVal || 0);
+
+                excelRows.push(dataRow);
             });
 
-            // 3. Subtotal Row (AB YAHAN SAARE BRANDS ADD HAIN)
-            excelRows.push({
-                "Date": "", "City": "", "Store": "",
+            // 3. Subtotal Row
+            const subTotalRow = {
+                "DATE": "", "CITY": "", "STORE": "", "AREA": "",
                 "BA": `${group.channelName.toUpperCase()} TOTAL:`,
-                "AMRIJ Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.AMRIJ?.qty) || 0), 0),
-                "AMRIJ Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.AMRIJ?.val) || 0), 0),
-                "EVERNOYA Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.EVERNOYA?.qty) || 0), 0),
-                "EVERNOYA Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.EVERNOYA?.val) || 0), 0),
-                "NO!MO! Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.['NO!MO!']?.qty) || 0), 0),
-                "NO!MO! Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.['NO!MO!']?.val) || 0), 0),
-                "RHD Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.RHD?.qty) || 0), 0),
-                "RHD Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.RHD?.val) || 0), 0),
-                "RIVAJ Qty": group.allRows.reduce((s, r) => s + (Number(r.brands?.RIVAJ?.qty) || 0), 0),
-                "RIVAJ Val": group.allRows.reduce((s, r) => s + (Number(r.brands?.RIVAJ?.val) || 0), 0),
-                "TOTAL Qty": group.allRows.reduce((s, r) => s + (Number(r.storeTotalQty) || 0), 0),
-                "TOTAL Val": group.allRows.reduce((s, r) => s + (Number(r.storeTotalVal) || 0), 0)
+            };
+
+            brands.forEach(b => {
+                subTotalRow[`${b} QTY`] = Math.round(group.allRows.reduce((s, r) => s + (Number(r.brands?.[b]?.qty) || 0), 0));
+                subTotalRow[`${b} VAL`] = Math.round(group.allRows.reduce((s, r) => s + (Number(r.brands?.[b]?.val) || 0), 0));
             });
+
+            subTotalRow["TOTAL QTY"] = Math.round(group.allRows.reduce((s, r) => s + (Number(r.storeTotalQty) || 0), 0));
+            subTotalRow["TOTAL VAL"] = Math.round(group.allRows.reduce((s, r) => s + (Number(r.storeTotalVal) || 0), 0));
+
+            excelRows.push(subTotalRow);
         });
 
         return excelRows;
@@ -290,49 +292,34 @@ const ChannelWiseSummaryReport = () => {
             </Paper>
 
             {/* TABLE */}
-            <Box sx={{ flexGrow: 1, px: 1, pb: 1, overflow: 'hidden' }}>
-                <TableContainer component={Paper} sx={{ height: '100%', overflow: 'auto' }}>
-                    <Table stickyHeader size="small">
+            <Box sx={{ flexGrow: 1, px: 0.5, pb: 1, height: 'calc(100vh - 160px)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <TableContainer component={Paper} sx={{ flexGrow: 1, overflow: 'auto', boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+                    <Table stickyHeader size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
                         <TableHead>
-                            <TableRow sx={{
-                                '& th': {
-                                    bgcolor: '#1b2142', color: 'white', fontWeight: 'bold',
-                                    fontSize: '11px', p: '6px 4px', borderRight: '1px solid #2c345a',
-                                    whiteSpace: 'nowrap'
-                                }
-                            }}>
-                                <TableCell colSpan={4} align="center">BASIC INFO</TableCell>
-                                {brands.map(b => <TableCell key={b} colSpan={2} align="center">{b}</TableCell>)}
+                            {/* Top Header - Pure Live Portal Style */}
+                            <TableRow sx={{ '& th': { bgcolor: '#1b2142', color: 'white', fontWeight: 'bold', fontSize: '10px', p: '4px 2px', borderRight: '1px solid #2c345a' } }}>
+                                <TableCell colSpan={5} align="center">Store Details</TableCell>
+                                {brands.map(b => <TableCell key={b} colSpan={2} align="center">{b.toUpperCase()}</TableCell>)}
                                 <TableCell colSpan={2} align="center" sx={{ bgcolor: '#004d40 !important' }}>TOTAL</TableCell>
                             </TableRow>
-                            <TableRow sx={{
-                                '& th': {
-                                    bgcolor: '#f0f0f0', fontSize: '10px', fontWeight: 'bold',
-                                    p: '4px 4px', color: '#1b2142', whiteSpace: 'nowrap'
-                                }
-                            }}>
-                                <TableCell align="center" sx={{ width: '50px' }}>Date</TableCell>
-                                <TableCell sx={{ width: '70px' }}>City</TableCell>
-                                <TableCell sx={{ width: '130px' }}>Store</TableCell>
-                                <TableCell sx={{ width: '110px' }}>BA</TableCell>
+                            {/* Sub Header - Adjusted for Area */}
+                            <TableRow sx={{ '& th': { bgcolor: '#f5f5f5', fontSize: '9px', fontWeight: 'bold', p: '2px 2px', color: '#1b2142', borderRight: '1px solid #e0e0e0' } }}>
+                                <TableCell align="center" sx={{ width: '45px' }}>Date</TableCell>
+                                <TableCell sx={{ width: '55px' }}>City</TableCell>
+                                <TableCell sx={{ width: '110px' }}>Store</TableCell> {/* Slightly tight to keep it 1 line */}
+                                <TableCell sx={{ width: '85px' }}>Area</TableCell>  {/* Added Area */}
+                                <TableCell sx={{ width: '85px' }}>BA</TableCell>
                                 {brands.concat(["TOTAL"]).map((_, i) => (
                                     <React.Fragment key={i}>
-                                        <TableCell align="center" sx={{ width: '40px' }}>Qty</TableCell>
-                                        <TableCell align="center" sx={{ width: '65px' }}>Val</TableCell>
+                                        <TableCell align="center" sx={{ width: '35px' }}>Qty</TableCell>
+                                        <TableCell align="center" sx={{ width: '50px' }}>Val</TableCell>
                                     </React.Fragment>
                                 ))}
                             </TableRow>
                         </TableHead>
 
                         <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={16} align="center" sx={{ py: 10 }}>
-                                        <CircularProgress size={30} />
-                                    </TableCell>
-                                </TableRow>
-                            ) : groupedByChannel.map((group, cIdx) => {
-                                // ✅ Pre-calculate date groups to avoid rowSpan issues
+                            {!loading && groupedByChannel.map((group, cIdx) => {
                                 const dateGroups = {};
                                 group.allRows.forEach((row, idx) => {
                                     if (!dateGroups[row.rowDate]) dateGroups[row.rowDate] = [];
@@ -341,107 +328,58 @@ const ChannelWiseSummaryReport = () => {
 
                                 return (
                                     <React.Fragment key={cIdx}>
-                                        {/* Channel Header Row */}
                                         <TableRow sx={{ bgcolor: '#fff5f7' }}>
-                                            <TableCell colSpan={16} sx={{
-                                                fontWeight: 'bold', fontSize: '11px',
-                                                color: '#ab1d47', py: 0.5, px: 2
-                                            }}>
+                                            <TableCell colSpan={5 + (brands.length * 2) + 2} sx={{ fontWeight: 'bold', fontSize: '10px', color: '#ab1d47', py: 0.3, px: 1 }}>
                                                 CHANNEL: {group.channelName.toUpperCase()}
                                             </TableCell>
                                         </TableRow>
 
-                                        {/* Data Rows */}
                                         {group.allRows.map((row, rIdx) => {
                                             const isFirstOfDate = dateGroups[row.rowDate]?.[0] === rIdx;
-                                            const dateRowSpan = dateGroups[row.rowDate]?.length || 1;
-
-                                            // ✅ Fix NaN: safe number parsing
-                                            const totalQty = Number(row.storeTotalQty) || 0;
-                                            const totalVal = Number(row.storeTotalVal) || 0;
-
                                             return (
                                                 <TableRow key={rIdx} hover sx={{
                                                     '& td': {
-                                                        fontSize: '11px', p: '4px 6px',
-                                                        borderRight: '1px solid #f0f0f0'
+                                                        fontSize: '10px', p: '2px 4px',
+                                                        borderRight: '1px solid #f0f0f0',
+                                                        whiteSpace: 'normal', // Isse naam lamba hua toh niche chala jayega
+                                                        wordBreak: 'break-word',
+                                                        lineHeight: '1.1'
                                                     }
                                                 }}>
                                                     {isFirstOfDate && (
-                                                        <TableCell
-                                                            rowSpan={dateRowSpan}
-                                                            align="center"
-                                                            sx={{
-                                                                fontWeight: 'bold', bgcolor: '#fff',
-                                                                fontSize: '11px', verticalAlign: 'middle',
-                                                                borderRight: '1px solid #e0e0e0'
-                                                            }}>
+                                                        <TableCell rowSpan={dateGroups[row.rowDate].length} align="center" sx={{ fontWeight: 'bold', bgcolor: '#fff', verticalAlign: 'middle' }}>
                                                             {row.rowDate ? format(parseISO(row.rowDate), 'MMM dd') : '-'}
                                                         </TableCell>
                                                     )}
-                                                    <TableCell sx={{ fontSize: '11px' }}>{row.city}</TableCell>
-                                                    <TableCell sx={{ fontWeight: 600, fontSize: '11px' }}>
-                                                        {row.storeName}
-                                                        {row.area && (
-                                                            <Box component="span" sx={{
-                                                                display: 'block',
-                                                                fontSize: '10px',
-                                                                color: '#888',
-                                                                fontWeight: 400,
-                                                                lineHeight: 1.2
-                                                            }}>
-                                                                {row.area}
-                                                            </Box>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell sx={{ fontSize: '11px' }}>{row.baName}</TableCell>
+                                                    <TableCell>{row.city}</TableCell>
+                                                    {/* Store Name with optional wrap */}
+                                                    <TableCell sx={{ fontWeight: 600 }}>{row.storeName}</TableCell>
+                                                    <TableCell>{row.area}</TableCell>
+                                                    <TableCell>{row.baName}</TableCell>
 
                                                     {brands.map(b => (
                                                         <React.Fragment key={b}>
-                                                            <TableCell align="center">
-                                                                {Math.round(Number(row.brands?.[b]?.qty) || 0)}
-                                                            </TableCell>
-                                                            <TableCell align="right">
-                                                                {Math.round(Number(row.brands?.[b]?.val) || 0).toLocaleString()}
-                                                            </TableCell>
+                                                            <TableCell align="center">{Math.round(Number(row.brands?.[b]?.qty) || 0)}</TableCell>
+                                                            <TableCell align="right">{Math.round(Number(row.brands?.[b]?.val) || 0).toLocaleString()}</TableCell>
                                                         </React.Fragment>
                                                     ))}
-
-                                                    {/* ✅ Fixed TOTAL cells - no NaN */}
-                                                    <TableCell align="center" sx={{ bgcolor: '#f1f8f7', fontWeight: 'bold', color: '#004d40' }}>
-                                                        {Math.round(totalQty)}
-                                                    </TableCell>
-                                                    <TableCell align="right" sx={{ bgcolor: '#f1f8f7', fontWeight: 'bold', color: '#004d40' }}>
-                                                        {Math.round(totalVal).toLocaleString()}
-                                                    </TableCell>
+                                                    <TableCell align="center" sx={{ bgcolor: '#f1f8f7', fontWeight: 'bold', color: '#004d40' }}>{Math.round(Number(row.storeTotalQty) || 0)}</TableCell>
+                                                    <TableCell align="right" sx={{ bgcolor: '#f1f8f7', fontWeight: 'bold', color: '#004d40' }}>{Math.round(Number(row.storeTotalVal) || 0).toLocaleString()}</TableCell>
                                                 </TableRow>
                                             );
                                         })}
 
-                                        {/* ✅ Channel Subtotal Row */}
-                                        <TableRow sx={{
-                                            bgcolor: '#1b2142',
-                                            '& td': { color: 'white', fontWeight: 'bold', fontSize: '11px', py: 0.8 }
-                                        }}>
-                                            <TableCell colSpan={4} align="right" sx={{ pr: 1 }}>
-                                                {group.channelName.toUpperCase()} TOTAL:
-                                            </TableCell>
+                                        {/* Sub-Total Row - Live Portal Style */}
+                                        <TableRow sx={{ bgcolor: '#1b2142', '& td': { color: 'white', fontWeight: 'bold', fontSize: '10px', py: 0.5 } }}>
+                                            <TableCell colSpan={5} align="right" sx={{ pr: 1 }}>{group.channelName.toUpperCase()} TOTAL:</TableCell>
                                             {brands.map(b => (
                                                 <React.Fragment key={b}>
-                                                    <TableCell align="center">
-                                                        {Math.round(group.allRows.reduce((s, r) => s + (Number(r.brands?.[b]?.qty) || 0), 0))}
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        {Math.round(group.allRows.reduce((s, r) => s + (Number(r.brands?.[b]?.val) || 0), 0)).toLocaleString()}
-                                                    </TableCell>
+                                                    <TableCell align="center">{Math.round(group.allRows.reduce((s, r) => s + (Number(r.brands?.[b]?.qty) || 0), 0))}</TableCell>
+                                                    <TableCell align="right">{Math.round(group.allRows.reduce((s, r) => s + (Number(r.brands?.[b]?.val) || 0), 0)).toLocaleString()}</TableCell>
                                                 </React.Fragment>
                                             ))}
-                                            <TableCell align="center" sx={{ bgcolor: '#004d40' }}>
-                                                {Math.round(group.allRows.reduce((s, r) => s + (Number(r.storeTotalQty) || 0), 0))}
-                                            </TableCell>
-                                            <TableCell align="right" sx={{ bgcolor: '#004d40' }}>
-                                                {Math.round(group.allRows.reduce((s, r) => s + (Number(r.storeTotalVal) || 0), 0)).toLocaleString()}
-                                            </TableCell>
+                                            <TableCell align="center" sx={{ bgcolor: '#004d40' }}>{Math.round(group.allRows.reduce((s, r) => s + (Number(r.storeTotalQty) || 0), 0))}</TableCell>
+                                            <TableCell align="right" sx={{ bgcolor: '#004d40' }}>{Math.round(group.allRows.reduce((s, r) => s + (Number(r.storeTotalVal) || 0), 0)).toLocaleString()}</TableCell>
                                         </TableRow>
                                     </React.Fragment>
                                 );
