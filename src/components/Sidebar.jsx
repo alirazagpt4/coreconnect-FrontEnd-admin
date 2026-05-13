@@ -120,6 +120,7 @@ const Sidebar = ({ open, toggleDrawer }) => {
                 { name: 'Attendance Report', path: '/attendance-report', key: 'attendance' },
                 { name: 'Daily Sales Report', path: '/sales-report', key: 'sales' },
                 { name: 'Channel Sales Report', path: '/channelwisesummary-report', key: 'channel' },
+                { name: 'Channel Summary Report', path: '/channel-report', key: 'channelsummary' },
                 { name: 'Short Items Report', path: '/short-items-report', key: 'short' },
                 { name: 'Interception Report', path: '/interception-report', key: 'interception' },
                 { name: 'Short Tester Report', path: '/shorttester-report', key: 'tester' },

@@ -17,6 +17,7 @@ import InterceptionReport from './pages/InterceptionReport';
 import ExpiryStockReport from './pages/ExpiryStockReport';
 import ShortTestersReport from './pages/ShortTestersReport';
 import ChannelWiseSummaryReport from './pages/ChannelWiseSummaryReport';
+import ChannelSummaryReport from './pages/ChannelSummaryReport';
 
 function App() {
   // AuthContext se token nikalna taake check kar sakein banda login hai ya nahi
@@ -62,6 +63,7 @@ function App() {
           <Route path="expirystock-report" element={<ExpiryStockReport />} />
           <Route path="shorttester-report" element={<ShortTestersReport />} />
           <Route path="channelwisesummary-report" element={<ChannelWiseSummaryReport />} />
+          <Route path="channel-report" element={<ChannelSummaryReport />} />
 
 
 
