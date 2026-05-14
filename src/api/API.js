@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// 1. Axios Instance create karein
+// 1. Axios Instance update karein
 const API = axios.create({
-    baseURL: 'http://62.171.183.182/api', // Apna backend URL yahan dalein
+    // baseURL ko badal kar sirf '/api' karein
+    // Taake Vite Proxy isay pakar kar backend IP par bhej sake
+    baseURL: '/api',
     headers: {
         'Content-Type': 'application/json',
     }
