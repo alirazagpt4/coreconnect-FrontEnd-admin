@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { Summarize, FileDownload, Map, CalendarToday, Store as StoreIcon, LocationOn } from '@mui/icons-material'; // Icons add kiye
 import API from '../api/API';
-import { handleExportToExcel } from '../utils/exportUtils';
+import { handleExportToExcelWithFilters } from '../utils/exportUtils';
 
 const ChannelSummaryReport = () => {
     const [rawReportData, setRawReportData] = useState([]);
@@ -115,7 +115,7 @@ const ChannelSummaryReport = () => {
         rawReportData.forEach((group) => {
             // 1. Channel Header Row
             excelRows.push({
-                "STORE": `CHANNEL: ${group.channel.toUpperCase()}`,
+                "STORE": `${group.channel.toUpperCase()}`,
                 "AREA": "",
                 ...brandColumns.reduce((acc, b) => ({ ...acc, [`${b} QTY`]: "", [`${b} VALUE`]: "" }), {}),
                 "TOTAL QTY": "",
@@ -160,6 +160,28 @@ const ChannelSummaryReport = () => {
         });
 
         return excelRows;
+    };
+
+
+    // --- YAHAN PAR FILTERS PREPARE KAREIN ---
+    const handleDownloadExcel = () => {
+        // console.log("Full Report Header:", reportHeader);
+
+       
+        const currentFilters = {
+            city: reportHeader.city || 'All Cities',
+            channel: reportHeader.channel || 'All Channels',
+            area: reportHeader.area || 'All Areas',
+            store: reportHeader.store || 'All Stores',
+            period: reportHeader.period || 'No Date Selected'
+        };
+
+        // Naya function call karein jo humne banaya hai
+        handleExportToExcelWithFilters(
+            getFormattedDataForExcel(),
+            'Channel_Summary_Report',
+            currentFilters
+        );
     };
 
     return (
@@ -240,7 +262,15 @@ const ChannelSummaryReport = () => {
                     </TextField>
 
                     <Button variant="contained" onClick={handleGenerateReport} disabled={loading} size="small" sx={{ bgcolor: '#ab1d47', height: '36px', fontWeight: 'bold' }}>GENERATE</Button>
-                    <Button variant="contained" color="success" onClick={() => handleExportToExcel(getFormattedDataForExcel(), 'Channel_Summary_Report')} size="small" sx={{ height: '36px', fontWeight: 'bold' }}><FileDownload sx={{ fontSize: '16px', mr: 0.5 }} /> EXCEL</Button>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={handleDownloadExcel} // Ab yeh function call hoga
+                        size="small"
+                        sx={{ height: '36px', fontWeight: 'bold' }}
+                    >
+                        <FileDownload sx={{ fontSize: '16px', mr: 0.5 }} /> EXCEL
+                    </Button>
                 </Box>
             </Paper>
 
