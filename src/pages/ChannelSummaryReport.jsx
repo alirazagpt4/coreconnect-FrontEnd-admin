@@ -119,7 +119,7 @@ const ChannelSummaryReport = () => {
                 "AREA": "",
                 ...brandColumns.reduce((acc, b) => ({ ...acc, [`${b} QTY`]: "", [`${b} VALUE`]: "" }), {}),
                 "TOTAL QTY": "",
-                "TOTAL VAL": ""
+                "TOTAL VALUE": ""
             });
 
             // 2. Store Data Rows
@@ -132,7 +132,7 @@ const ChannelSummaryReport = () => {
                 // Har brand ka data specific column mein map karein
                 brandColumns.forEach(b => {
                     row[`${b} QTY`] = s.brands[b]?.qty || 0;
-                    row[`${b} VAL`] = Math.round(s.brands[b]?.val || 0);
+                    row[`${b} VALUE`] = Math.round(s.brands[b]?.val || 0);
                 });
 
                 row["TOTAL QTY"] = s.storeTotalQty;
@@ -150,7 +150,7 @@ const ChannelSummaryReport = () => {
                 const qty = group.stores.reduce((sum, st) => sum + (st.brands[b]?.qty || 0), 0);
                 const val = group.stores.reduce((sum, st) => sum + (st.brands[b]?.val || 0), 0);
                 channelTotalRow[`${b} QTY`] = qty;
-                channelTotalRow[`${b} VAL`] = Math.round(val);
+                channelTotalRow[`${b} VALUE`] = Math.round(val);
             });
             channelTotalRow["TOTAL QTY"] = group.channelTotalQty;
             channelTotalRow["TOTAL VALUE"] = Math.round(group.channelTotalVal);
@@ -240,7 +240,7 @@ const ChannelSummaryReport = () => {
                     </TextField>
 
                     <Button variant="contained" onClick={handleGenerateReport} disabled={loading} size="small" sx={{ bgcolor: '#ab1d47', height: '36px', fontWeight: 'bold' }}>GENERATE</Button>
-                    <Button variant="contained" color="success" onClick={() => handleExportToExcel(getFormattedDataForExcel(), 'Channel_Report')} size="small" sx={{ height: '36px', fontWeight: 'bold' }}><FileDownload sx={{ fontSize: '16px', mr: 0.5 }} /> EXCEL</Button>
+                    <Button variant="contained" color="success" onClick={() => handleExportToExcel(getFormattedDataForExcel(), 'Channel_Summary_Report')} size="small" sx={{ height: '36px', fontWeight: 'bold' }}><FileDownload sx={{ fontSize: '16px', mr: 0.5 }} /> EXCEL</Button>
                 </Box>
             </Paper>
 
@@ -314,7 +314,7 @@ const ChannelSummaryReport = () => {
                                 <React.Fragment key={cIdx}>
                                     <TableRow sx={{ bgcolor: '#fff5f7' }}>
                                         <TableCell colSpan={2 + (brands.length * 2) + 2} sx={{ fontWeight: 'bold', fontSize: '11px', color: '#ab1d47', py: 0.8, px: 2 }}>
-                                       {group.channel.toUpperCase()}
+                                            {group.channel.toUpperCase()}
                                         </TableCell>
                                     </TableRow>
                                     {group.stores.map((row, rIdx) => (
