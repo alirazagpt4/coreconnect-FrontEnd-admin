@@ -12,7 +12,6 @@ import { handleExportToExcelWithFilters } from '../utils/exportUtils';
 
 const ChannelSummaryReport = () => {
     const [rawReportData, setRawReportData] = useState([]);
-    // Header state ko update kiya taake backend ke saare fields handle hon
     const [reportHeader, setReportHeader] = useState({ city: '', period: '', store: '', area: '', channel: '' });
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(false);
