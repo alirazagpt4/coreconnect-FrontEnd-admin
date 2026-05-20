@@ -191,6 +191,20 @@ const ChannelWiseSummaryReport = () => {
         }
     };
 
+    const filteredStores = stores.filter(store => {
+        // 1. Channel Filter Check
+        const matchesChannel = filters.channel_id
+            ? store.channel_id === filters.channel_id
+            : true;
+
+        // 2. Single City Filter Check (Handles Single ID instead of Array)
+        const matchesCity = filters.city_id && filters.city_id !== ""
+            ? store.city_id === filters.city_id
+            : true;
+
+        return matchesChannel && matchesCity;
+    });
+
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f4f6f8', overflow: 'hidden' }}>
 
@@ -236,43 +250,73 @@ const ChannelWiseSummaryReport = () => {
                         />
                     </LocalizationProvider>
 
-                    <TextField select label="City" size="small" value={filters.city_id}
-                        onChange={(e) => setFilters({ ...filters, city_id: e.target.value })}
-                        sx={inputStyle}>
+                    <TextField
+                        select
+                        label="City"
+                        size="small"
+                        value={filters.city_id}
+                        sx={inputStyle}
+                        // Updated Single Select onChange Logic
+                        onChange={(e) => setFilters({
+                            ...filters,
+                            city_id: e.target.value,
+                            store_id: "", // City badalte hi store reset
+                            area: ""      // Store reset toh area bhi automatic reset
+                        })}
+                    >
                         <MenuItem value="">All Cities</MenuItem>
                         {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                     </TextField>
 
-                    <TextField select label="Channel" size="small" value={filters.channel_id}
-                        onChange={(e) => setFilters({ ...filters, channel_id: e.target.value })}
-                        sx={inputStyle}>
+                    <TextField
+                        select
+                        label="Channel"
+                        size="small"
+                        value={filters.channel_id}
+                        sx={inputStyle}
+                        // Is onChange ko replace karo:
+                        onChange={(e) => setFilters({ ...filters, channel_id: e.target.value, store_id: "" })}
+                    >
                         <MenuItem value="">All Channels</MenuItem>
                         {channels.map(ch => <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>)}
                     </TextField>
 
-                    <TextField select label="Store" size="small" value={filters.store_id}
-                        onChange={(e) => setFilters({ ...filters, store_id: e.target.value })}
-                        sx={inputStyle}>
+                    <TextField
+                        select
+                        label="Store"
+                        size="small"
+                        value={filters.store_id}
+                        sx={inputStyle}
+                        onChange={(e) => {
+                            const selectedStoreId = e.target.value;
+                            // Poori stores list mein se select kiya hua store dhundo
+                            const selectedStoreObj = stores.find(s => s.id === selectedStoreId);
+
+                            setFilters({
+                                ...filters,
+                                store_id: selectedStoreId,
+                                // Agar store mil jaye toh uska area auto-select karo, warna khali ""
+                                area: selectedStoreObj ? selectedStoreObj.area : ""
+                            });
+                        }}
+                    >
                         <MenuItem value="">All Stores</MenuItem>
-                        {stores.filter(s => !filters.city_id || String(s.city_id) === String(filters.city_id))
-                            .map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
+                        {/* Yahan humne filteredStores use kiya hai jo top par compute ho raha hai */}
+                        {filteredStores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
                     </TextField>
 
                     <TextField
                         select
                         label="Area"
-                        value={filters.area}
-                        onChange={(e) => setFilters({ ...filters, area: e.target.value })}
                         size="small"
+                        value={filters.area}
                         sx={inputStyle}
+                        onChange={(e) => setFilters({ ...filters, area: e.target.value })}
+                        // Jab store select ho jaye, toh area ko disable kar do taake user conflicts paida na kare
+                        disabled={!!filters.store_id}
                     >
                         <MenuItem value="">All Areas</MenuItem>
-                        {areas.map((areaName, index) => (
-                            // Agar 'areaName' khud string hai, toh usay hi value aur label ke liye use karein
-                            <MenuItem key={index} value={areaName}>
-                                {areaName}
-                            </MenuItem>
-                        ))}
+                        {areas.map((a, i) => <MenuItem key={i} value={a}>{a}</MenuItem>)}
                     </TextField>
 
                     <Button variant="contained" onClick={handleGenerateReport} disabled={loading} size="small"

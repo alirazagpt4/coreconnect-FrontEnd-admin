@@ -165,6 +165,44 @@ const SalesReport = () => {
         handleExportToExcel(rowsForExcel, "Sales_Report");
     };
 
+
+
+ // 1. City aur Channel ke hissab se Stores filter karein
+    const filteredStores = stores.filter(store => {
+        const matchesCity = filters.city_id && filters.city_id !== ""
+            ? String(store.city_id) === String(filters.city_id)
+            : true;
+
+        const matchesChannel = filters.channel_id && filters.channel_id !== ""
+            ? String(store.channel_id) === String(filters.channel_id)
+            : true;
+
+        return matchesCity && matchesChannel;
+    });
+
+    // 2. Selected Store ke teeno BA Columns ke hissab se Users filter karein (Database Match)
+    const filteredUsers = users.filter(user => {
+        // Agar store select nahi hai, toh saare users dikhao
+        if (!filters.store_id || filters.store_id === "") return true;
+
+        // Pehle select kiye hue store ka poora object nikalo
+        const selectedStoreObj = stores.find(s => String(s.id) === String(filters.store_id));
+
+        // Agar store object mil jaye, toh check karo user ki ID un teeno columns mein se kisi ek mein hai ya nahi
+        if (selectedStoreObj) {
+            const match1 = selectedStoreObj.ba_user_id && String(selectedStoreObj.ba_user_id) === String(user.id);
+            const match2 = selectedStoreObj.ba_user_id_2 && String(selectedStoreObj.ba_user_id_2) === String(user.id);
+            const match3 = selectedStoreObj.ba_user_id_3 && String(selectedStoreObj.ba_user_id_3) === String(user.id);
+            
+            return match1 || match2 || match3;
+        }
+
+       
+        return false;
+    });
+
+
+    
     return (
         <>
 
@@ -258,7 +296,19 @@ const SalesReport = () => {
                             </Box>
 
                             {/* City - Responsive but smaller flex */}
-                            <TextField select label="City" size="small" value={filters.city_id} onChange={(e) => setFilters({ ...filters, city_id: e.target.value })} sx={{ flex: 0.8, minWidth: '100px' }}>
+                            <TextField
+                                select
+                                label="City"
+                                size="small"
+                                value={filters.city_id}
+                                onChange={(e) => setFilters({
+                                    ...filters,
+                                    city_id: e.target.value,
+                                    store_id: '',
+                                    ba_id: ''
+                                })}
+                                sx={{ flex: 0.8, minWidth: '100px' }}
+                            >
                                 <MenuItem value="">All</MenuItem>
                                 {cities.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                             </TextField>
@@ -269,7 +319,12 @@ const SalesReport = () => {
                                 label="Channel"
                                 size="small"
                                 value={filters.channel_id}
-                                onChange={(e) => setFilters({ ...filters, channel_id: e.target.value })}
+                                onChange={(e) => setFilters({
+                                    ...filters,
+                                    channel_id: e.target.value,
+                                    store_id: '',
+                                    ba_id: ''
+                                })}
                                 sx={{ flex: 0.8, minWidth: '100px' }}
                             >
                                 <MenuItem value="">All</MenuItem>
@@ -279,15 +334,41 @@ const SalesReport = () => {
                             </TextField>
 
                             {/* Store */}
-                            <TextField select label="Store" size="small" value={filters.store_id} onChange={(e) => setFilters({ ...filters, store_id: e.target.value })} sx={{ flex: 1, minWidth: '120px' }}>
+                            <TextField
+                                select
+                                label="Store"
+                                size="small"
+                                value={filters.store_id}
+                                onChange={(e) => setFilters({
+                                    ...filters,
+                                    store_id: e.target.value,
+                                    ba_id: '' // Store badle toh selected BA reset
+                                })}
+                                sx={{ flex: 1, minWidth: '120px' }}
+                            >
                                 <MenuItem value="">All</MenuItem>
-                                {stores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}  {s.area ? `(${s.area})` : ''}</MenuItem>)}
+                                {filteredStores.map(s => (
+                                    <MenuItem key={s.id} value={s.id}>
+                                        {s.store_name} {s.area ? `(${s.area})` : ''}
+                                    </MenuItem>
+                                ))}
                             </TextField>
 
                             {/* BA Name */}
-                            <TextField select label="BA Name" size="small" value={filters.ba_id} onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })} sx={{ flex: 1, minWidth: '130px' }}>
+                            <TextField
+                                select
+                                label="BA Name"
+                                size="small"
+                                value={filters.ba_id}
+                                onChange={(e) => setFilters({ ...filters, ba_id: e.target.value })}
+                                sx={{ flex: 1, minWidth: '130px' }}
+                            >
                                 <MenuItem value="">All</MenuItem>
-                                {users.map(u => <MenuItem key={u.id} value={u.id}>{u.fullname || u.name}</MenuItem>)}
+                                {filteredUsers.map(u => (
+                                    <MenuItem key={u.id} value={u.id}>
+                                        {u.fullname || u.name}
+                                    </MenuItem>
+                                ))}
                             </TextField>
                         </Box>
 
