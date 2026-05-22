@@ -167,8 +167,12 @@ const SalesReport = () => {
 
 
 
- // 1. City aur Channel ke hissab se Stores filter karein
+
+    // 1. City aur Channel ke hissab se + ACTIVE Stores filter karein
     const filteredStores = stores.filter(store => {
+        // 👇 CHECK: Sirf active stores ko aage aane dein (Apne DB column name ke mutabiq match karein)
+        const isActive = store.is_active === true || store.is_active === 1 || store.status === 'active';
+
         const matchesCity = filters.city_id && filters.city_id !== ""
             ? String(store.city_id) === String(filters.city_id)
             : true;
@@ -177,7 +181,8 @@ const SalesReport = () => {
             ? String(store.channel_id) === String(filters.channel_id)
             : true;
 
-        return matchesCity && matchesChannel;
+        // isActive check ko return statement mein verify karein
+        return isActive && matchesCity && matchesChannel;
     });
 
     // 2. Selected Store ke teeno BA Columns ke hissab se Users filter karein (Database Match)
@@ -193,16 +198,16 @@ const SalesReport = () => {
             const match1 = selectedStoreObj.ba_user_id && String(selectedStoreObj.ba_user_id) === String(user.id);
             const match2 = selectedStoreObj.ba_user_id_2 && String(selectedStoreObj.ba_user_id_2) === String(user.id);
             const match3 = selectedStoreObj.ba_user_id_3 && String(selectedStoreObj.ba_user_id_3) === String(user.id);
-            
+
             return match1 || match2 || match3;
         }
 
-       
+
         return false;
     });
 
 
-    
+
     return (
         <>
 

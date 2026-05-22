@@ -184,19 +184,23 @@ const ChannelSummaryReport = () => {
     };
 
 
+    // --- LINE 164: FILTERED STORES LOGIC COMPUTATION ---
     const filteredStores = stores.filter(store => {
-        // 1. Channel Filter Check
+        // 1. Strict Boolean Status Check (Based on your raw payload 'is_active: true')
+        const isActive = store.is_active === true || store.is_active === 1;
+
+        // 2. Channel Filter Check
         const matchesChannel = filters.channel_id
             ? store.channel_id === filters.channel_id
             : true;
 
-        // 2. City Filter Check (Handles Multi-select array)
+        // 3. City Filter Check (Handles Multi-select array)
         const matchesCity = filters.city_id && filters.city_id.length > 0
             ? filters.city_id.includes(store.city_id)
             : true;
 
-        // Dono conditions match hongi toh store list mein aayega
-        return matchesChannel && matchesCity;
+        // Return true only if all technical layers pass
+        return isActive && matchesChannel && matchesCity;
     });
 
     return (
@@ -304,7 +308,7 @@ const ChannelSummaryReport = () => {
                     >
                         <MenuItem value="">All Stores</MenuItem>
                         {/* Yahan humne filteredStores use kiya hai jo top par compute ho raha hai */}
-                        {filteredStores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
+                        {filteredStores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}({s.area})</MenuItem>)}
                     </TextField>
 
                     <TextField

@@ -191,13 +191,18 @@ const ChannelWiseSummaryReport = () => {
         }
     };
 
+    // --- UPDATED FILTERED STORES LOGIC (STRICT ACTIVE STORES ONLY) ---
     const filteredStores = stores.filter(store => {
-        // 1. Channel Filter Check
+        // 1. Strict Active Status Check (Only allow true or numeric 1)
+        const isActive = store.is_active === true || store.is_active === 1;
+        if (!isActive) return false; // Inactive stores यहीं se drop ho jayenge
+
+        // 2. Channel Filter Check
         const matchesChannel = filters.channel_id
             ? store.channel_id === filters.channel_id
             : true;
 
-        // 2. Single City Filter Check (Handles Single ID instead of Array)
+        // 3. Single City Filter Check
         const matchesCity = filters.city_id && filters.city_id !== ""
             ? store.city_id === filters.city_id
             : true;
@@ -302,7 +307,7 @@ const ChannelWiseSummaryReport = () => {
                     >
                         <MenuItem value="">All Stores</MenuItem>
                         {/* Yahan humne filteredStores use kiya hai jo top par compute ho raha hai */}
-                        {filteredStores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}</MenuItem>)}
+                        {filteredStores.map(s => <MenuItem key={s.id} value={s.id}>{s.store_name}({s.area})</MenuItem>)}
                     </TextField>
 
                     <TextField
